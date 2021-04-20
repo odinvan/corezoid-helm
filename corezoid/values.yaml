@@ -1,47 +1,61 @@
 # Global values for subcharts | production
 global:
   # second level domain only! / core domain (example: corezoid.com)
-  domain: "devopsdev.corezoid.com"
+  domain: "corezoid.comfy.ua"
   # subdomain / sitename - dev.mpo.corezoid.com (example: dev.mpo)
-  subdomain: "corezoid-k8s-public"
+  subdomain: "main"
 
   # docker image registry
-  imageRegistry: "docker-hub.middleware.biz"
+  imageRegistry: "hub-registry.svc.aku.com"
   #IfNotPresent | Always | Never
   imagePullPolicy: "IfNotPresent"
   repotype: "public"
   product: "corezoid"
   # Ingress annotations
+  ingress_tls: true
   ingress:
+    deploy_nginx: true
     annotations:
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:305168114386:certificate/5fad3576-220b-4c69-ac85-e56b3fe684bd
-      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
-      alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=false"
+      kubernetes.io/ingress.class: nginx
+      # kubernetes.io/ingress.class: alb
+      # alb.ingress.kubernetes.io/scheme: internet-facing
+      # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:305168114386:certificate/5fad3576-220b-4c69-ac85-e56b3fe684bd
+      # alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+      # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+      # alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=false"
 
       # access restriction
       # alb.ingress.kubernetes.io/inbound-cidrs: 8.8.8.8/32, 1.1.1.1/32, 0.0.0.0/0
       # for creating route53 record-set
       # external-dns.alpha.kubernetes.io/hostname: {{ .Values.global.subdomain}}.{{ .Values.global.domain }}
 
+  ################################
+  ######## Proxy settings ########
+  http_proxy: http://proxy.svc.aku.com:3128
+
   ###########################################
   ######## Settings for filesystems #########
-  # Define global storage class: efs / nfs / manual
-  storage: nfs
+  # Define global storage class: efs / nfs / nfs-client / manual
+  storage: nfs-client
   # Define global storageClass name
-  storageClassName: "corezoid-storage-class-default"
+  storageClassName: "nfs-client"
+  ######## Settings NFS filesystem   ########
+  nfs:
+    ## set true if you choose storage: nfs
+    enabled: false
+
+  nfs-client:
+    ## set true if you choose storage: nfs-client
+    enabled: true
+    server: 172.16.0.11
+    path: /opt/nfs/k8s/corezoid
+
   ######## Settings AWS EFS filesystem   ########
   efs:
     awsRegion: "eu-west-1"
     efsFileSystemId: "fs-1388e9d9"
     ## set true if you choose storage: efs
     enabled: false
-  ######## Settings NFS filesystem   ########
-  nfs:
-    ## set true if you choose storage: nfs
-    enabled: true
 
   ########  Settings for stateful services  ########
 
@@ -217,7 +231,7 @@ global:
         # display of the git_call button
         git_call: false
         # set default company name
-        default_company: "My Corezoid"
+        default_company: "Comfy"
         # Tab name
         tab_name: "Corezoid"
         # disable or enable logo on main page
@@ -226,15 +240,15 @@ global:
         color_main: "#0791e5"
         color_logo: "#0791e5"
         color_logo_hover: "#056cab"
-    ldap_server: "ldap.middleware.loc"
+    ldap_server: "lt-dc2.aku.com"
     ldap_port: "389"
-    ldap_base: "ou=people,o=middleware"
-    ldap_filter: "uid"
+    ldap_base: "dc=aku,dc=com"
+    ldap_filter: "sAMAccountName"
     # then this param is true, bind_user_name, bind_user_pass should be filled. if it's false it is not necessary
     ldap_first_bind_user: true
-    ldap_bind_user_name: "uid=ldap,ou=people,o=middleware"
+    ldap_bind_user_name: "CN=ldap_aku,OU=Service Accounts,DC=aku,DC=com"
     ldap_bind_user_pass: ""
-    ldap_user_nick_entry: "cn"
+    ldap_user_nick_entry: "sAMAccountName"
     ldap_tls: false
     logic_settings:
       # max allowed threads for api logic
@@ -338,12 +352,12 @@ global:
   # web-superadm
   web_superadm:
     tag: "1.5.1"
-    subdomain: "superadm-k8s-public"
+    subdomain: "superadm"
     minReplicas: 1
 
   # syncapi
   syncapi:
-    subdomain: "syncapi-k8s-public"
+    subdomain: "syncapi"
     tag: "2.0.3"
     minReplicas: 2
     maxReplicas: 20
@@ -425,6 +439,10 @@ global:
     tag: "1.2.2"
     minReplicas: 1
 
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/worker
+    operator: Exists
 
   # debug options
   # allows write crushdumps to the stderr output for capturing by logging system

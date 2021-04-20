@@ -62,5 +62,9 @@ spec:
       {{- if not  (eq .Values.global.repotype "public") }}
       imagePullSecrets:
         - name: corezoid-secret
-  {{- end }}
+      {{- end }}
+      {{- if (.Values.global.tolerations) }}
+      tolerations:
+{{ toYaml .Values.global.tolerations | indent 8 }}
+      {{- end }}
 

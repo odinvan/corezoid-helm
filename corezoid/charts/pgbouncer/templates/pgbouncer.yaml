@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
         - name: {{ .Values.appName }}
-          image: "{{ .Values.image.registry }}/{{ .Values.global.repotype}}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.global.repotype}}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           env:
             - name: DB_USER
               valueFrom:
@@ -134,7 +134,7 @@ spec:
             successThreshold: 1
             failureThreshold: 3
         - name: pgbouncer-exporter
-          image: spreaker/prometheus-pgbouncer-exporter
+          image: "{{ .Values.global.imageRegistry }}/spreaker/prometheus-pgbouncer-exporter"
           env:
             - name: PGBOUNCER_EXPORTER_HOST
               value: 0.0.0.0
@@ -157,5 +157,9 @@ spec:
       {{- if not  (eq .Values.global.repotype "public") }}
       imagePullSecrets:
         - name: corezoid-secret
+      {{- end }}
+      {{- if (.Values.global.tolerations) }}
+      tolerations:
+{{ toYaml .Values.global.tolerations | indent 8 }}
       {{- end }}
 {{- end }}

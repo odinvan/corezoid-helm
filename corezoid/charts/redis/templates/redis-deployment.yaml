@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: "{{ .Values.image.registry }}/{{ .Values.global.repotype | default "public" }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.global.imageRegistry }}/{{ .Values.global.repotype | default "public" }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         resources:
           limits:
             cpu: 300m
@@ -75,6 +75,10 @@ spec:
       {{- if not  (eq .Values.global.repotype "public") }}
       imagePullSecrets:
         - name: corezoid-secret
+      {{- end }}
+      {{- if (.Values.global.tolerations) }}
+      tolerations:
+{{ toYaml .Values.global.tolerations | indent 8 }}
       {{- end }}
       volumes:
         - name: redisconfig

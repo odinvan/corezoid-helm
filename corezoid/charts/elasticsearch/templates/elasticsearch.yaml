@@ -21,12 +21,12 @@ spec:
     spec:
       initContainers:
         - name: increase-vm-max-map
-          image: busybox
+          image: "{{ .Values.global.imageRegistry }}/busybox"
           command: ["sysctl", "-w", "vm.max_map_count=262144"]
           securityContext:
             privileged: true
         - name: increase-fd-ulimit
-          image: busybox
+          image: "{{ .Values.global.imageRegistry }}/busybox"
           command: ["sh", "-c", "ulimit -n 65536"]
           securityContext:
             privileged: true
@@ -62,6 +62,10 @@ spec:
       imagePullSecrets:
         - name: corezoid-secret
         {{- end }}
+      {{- if (.Values.global.tolerations) }}
+      tolerations:
+{{ toYaml .Values.global.tolerations | indent 8 }}
+      {{- end }}
 
 ---
 apiVersion: v1
