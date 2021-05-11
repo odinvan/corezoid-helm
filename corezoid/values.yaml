@@ -372,6 +372,9 @@ global:
   # merchant
   merchant:
     tag: "v0.0.27.2"
+    # true or false
+    enabled: true
+    subdomain: "merchant"
     secret:
       ## true - secret will be created automaticaly with provided values
       ## false - secret should be created manualy

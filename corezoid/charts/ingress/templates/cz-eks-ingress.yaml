@@ -58,6 +58,14 @@ spec:
           - backend:
               serviceName: syncapi-main
               servicePort: 8090
+    {{- if .Values.global.merchant.enabled }}
+    - host: {{ .Values.global.merchant.subdomain}}.{{ .Values.global.domain }}
+      http:
+        paths:
+          - backend:
+              serviceName: merchant-service
+              servicePort: 8080
+    {{- end }}
     {{- if .Values.global.sa.enabled }}
     - host: {{ .Values.global.sa_web.subdomain}}.{{ .Values.global.domain }}
       http:
@@ -75,5 +83,8 @@ spec:
         {{- if .Values.global.sa.enabled }}
         - {{ .Values.global.sa_web.subdomain}}.{{ .Values.global.domain }}
         {{- end }}
+        {{- if .Values.global.merchant.enabled }}
+        - {{ .Values.global.merchant.subdomain}}.{{ .Values.global.domain }}
+      {{- end }}
       secretName: tls-{{ .Values.appName }}-{{ .Release.Namespace }}
   {{- end }}
