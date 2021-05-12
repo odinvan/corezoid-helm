@@ -31,7 +31,7 @@ global:
 
   ################################
   ######## Proxy settings ########
-  http_proxy: http://proxy.svc.aku.com:3128
+  http_proxy: http://proxy-lt.svc.aku.com:3128
 
   ###########################################
   ######## Settings for filesystems #########
