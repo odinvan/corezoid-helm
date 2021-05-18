@@ -19,7 +19,8 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/web-configmap-nginx.yaml") . | sha256sum }}
-        checksum/config: {{ include (print $.Template.BasePath "/web-configmap-site.yaml") . | sha256sum }}
+        checksum/config_site: {{ include (print $.Template.BasePath "/web-configmap-site.yaml") . | sha256sum }}
+        checksum/config_merchant: {{ include (print $.Template.BasePath "/web-configmap-merchant.yaml") . | sha256sum }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9113"
         prometheus.io/scrape: "true"
@@ -39,6 +40,9 @@ spec:
             - name: web-config-site
               mountPath: /etc/nginx/conf.d/corezoid.conf
               subPath: corezoid.conf
+            - name: web-config-merchant
+              mountPath: /etc/nginx/conf.d/merchant.conf
+              subPath: merchant.conf
             - name: web-config-logo
               mountPath: /usr/share/nginx/html/logo/logo.svg
               subPath: logo.svg
@@ -102,3 +106,6 @@ spec:
         - name: web-config-logo
           configMap:
             name: {{ .Values.appName }}-config-logo
+        - name: web-config-merchant
+          configMap:
+            name: {{ .Values.appName }}-merchant

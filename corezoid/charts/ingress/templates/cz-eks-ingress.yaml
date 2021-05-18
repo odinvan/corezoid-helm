@@ -63,8 +63,8 @@ spec:
       http:
         paths:
           - backend:
-              serviceName: merchant-service
-              servicePort: 8080
+              serviceName: corezoid-web-adm
+              servicePort: 80
     {{- end }}
     {{- if .Values.global.sa.enabled }}
     - host: {{ .Values.global.sa_web.subdomain}}.{{ .Values.global.domain }}
