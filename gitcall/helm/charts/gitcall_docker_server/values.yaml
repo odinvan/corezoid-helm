@@ -12,9 +12,5 @@ helm:
     description: "The component for Docker Engine server"
 
 config_file: daemon.json
-<<<<<<< HEAD
-image: "docker-hub.middleware.biz/library/docker"
-=======
 image: "docker-hub.middleware.biz/hub.docker.com/library/docker"
->>>>>>> 8a98885421f11256b3022593c35e3d2fc83820dd
 image_version: "18.09.9-dind"

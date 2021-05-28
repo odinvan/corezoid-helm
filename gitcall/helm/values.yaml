@@ -1,5 +1,9 @@
 #    helm install gitcall-comfy --namespace corezoid -f var/helm/values.yaml --atomic --wait --timeout 5m var/helm/?
 global:
+    tolerations:
+        - key: node-role.kubernetes.io/worker
+          operator: Exists
+          effect: NoSchedule
     release:
         name: 'gitcall_app'
         helm:
@@ -101,120 +105,6 @@ global:
             password: 'passwertws'
             port: 5672
             vhost: '/conveyor'
-<<<<<<< HEAD
-docker-registry:
-    image:
-        repository: 'hub-registry.svc.aku.com/registry'
-        tag: '2.7.1'
-        pullPolicy: 'IfNotPresent'
-    secrets:
-        htpasswd: 'k8s:$2y$05$PjIZxG9e7gzDUHJ0f1f7MuP6UGl5OwyZ2hrqg6BfH8PuVAuTMZBES
-
-            gitcall:$2y$05$ibp8WAh2tPlNNN4vpIQNWOay1psM4wSC7TEKCB2pzlhSh.XWRPIwu
-
-'
-    ingress:
-        enabled: true
-        hosts: ['gitcall-registry.corezoid.comfy.ua']
-        path: '/*'
-        annotations:
-            kubernetes.io/ingress.class: 'nginx'
-            cert-manager.io/cluster-issuer: letsencrypt
-    service:
-        type: 'NodePort'
-        nodePort: 32501
-    configData:
-        storage:
-            delete:
-                enabled: true
-gitcall_amulet:
-    gitcall_features_tests:
-        enabled: false
-        rabbitmq_dundergitcall_vhost: ''
-        rabbitmq_gitcall_vhost: ''
-        rabbitmq_host: ''
-        rabbitmq_password: ''
-        rabbitmq_user: ''
-    gitcall_network_policy_tests:
-        enabled: false
-        docker_engine_allow: ['gitcall-docker-registry:443', 'google.com:443']
-        docker_engine_deny: []
-        docker_registry_allow: []
-        docker_registry_deny: ['rabbitmq:5672', 'postgres:5432', 'google.com:443']
-        gitcall_allow: ['rabbitmq:5672', 'postgres:5432', 'gitcall-docker-engine:2375', 'gitcall-docker-registry:443', 'pimp-service:8080', 'github.com:443']
-        gitcall_deny: []
-        pimp_allow: ['10.96.0.1:443']
-        pimp_deny: ['rabbitmq:5672', 'postgres:5432', 'google.com:443']
-    usercode_network_policy_tests:
-        enabled: false
-        rabbitmq_dundergitcall_vhost: ''
-        rabbitmq_gitcall_vhost: ''
-        rabbitmq_host: ''
-        rabbitmq_password: ''
-        rabbitmq_user: ''
-    helm:
-        image_pull_policy: 'IfNotPresent'
-        image_pull_secrets: []
-gitcall_pimp:
-    config:
-        api:
-            auth:
-                gitcall: '5GHUnzUWUKfTqDDfYSF5HVLDdcJNv2Ph9LDbULKEy6xKZcmqVDZFLMsLvCrW78hW'
-            server:
-                host: '0.0.0.0'
-                port: 8080
-        gopsagent:
-            enabled: true
-            host: '127.0.0.1'
-            port: 6527
-        k8s:
-            apply_timeout_ms: 10000
-            auth:
-                in_cluster: true
-            image_pull_secrets:
-                - secret_name: 'gitcall-comfy-pimp-registry-secret'
-                  docker_config:
-                    auths:
-                        docker-hub.middleware.biz:
-                            username: 'runner'
-                            password: 'Lytghjgtnhjdcr'
-                        gitcall-registry.corezoid.comfy.ua:
-                            username: 'k8s'
-                            password: 'As9nyF9ZV2r2x49EcBNb'
-            manage_namespaces: false
-            manage_networkpolicies: false
-            namespace_cache_ms: 86400
-            secrets_cache_ms: 86400
-        promserver:
-            enabled: true
-            type: 'scrape'
-            metrics_host: '0.0.0.0'
-            metrics_port: 9100
-        sentry:
-            enabled: false
-    logger:
-        format: 'text'
-        level: 'debug'
-        output: 'stderr'
-    helm:
-        cluster_role_name: 'gitcall-comfy-gitcall-pimp-cluster-role'
-        cluster_role_binding_name: 'gitcall-comfy-gitcall-pimp-cluster-role-binding'
-        image_pull_policy: 'Always'
-        image_pull_secrets: []
-        ingress_host: ''
-        max_replicas: 1
-        min_replicas: 1
-        resources:
-            limits:
-                cpu: '500m'
-                memory: '500Mi'
-            requests:
-                cpu: '500m'
-                memory: '500Mi'
-        secrets: []
-gitcall:
-    image: 'docker-hub.middleware.biz/gitcall/gitcall'
-=======
 postgresql_credentials:
     gitcall:
         host: 'pg-postgresql'
@@ -246,7 +136,6 @@ rabbitmq_credentials:
         port: 5672
         vhost: '/conveyor'
 gitcall:
->>>>>>> 8a98885421f11256b3022593c35e3d2fc83820dd
     config:
         dundergitcall:
             global_policy:
