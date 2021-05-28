@@ -93,6 +93,10 @@ spec:
                 - FOWNER
                 - CHOWN
                 - MKNOD
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/worker
+          operator: Exists
       {{- if $d.image_pull_secrets | default false }}
       imagePullSecrets:
       {{- range $d.image_pull_secrets}}
@@ -105,10 +109,7 @@ spec:
             name: {{ .Release.Name }}-gitcall-pimp-config
         - name: tmp
           emptyDir: {}
-      {{- if (.Values.global.tolerations) }}
-      tolerations:
-{{ toYaml .Values.global.tolerations | indent 8 }}
-  {{- end }}
+
   {{- define "gitcall_pimp_env_secrets" }}
 {{- range $_, $secret := .}}
 {{- range $_, $data := $secret.data }}

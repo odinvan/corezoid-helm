@@ -46,7 +46,7 @@ spec:
 {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "hub-registry.svc.aku.com/library/registry:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
           - /bin/registry
@@ -186,10 +186,10 @@ spec:
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
 {{- end }}
-{{- if .Values.tolerations }}
       tolerations:
-{{ toYaml .Values.tolerations | indent 8 }}
-{{- end }}
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/worker
+          operator: Exists
       volumes:
 {{- if .Values.secrets.htpasswd }}
         - name: auth
@@ -219,7 +219,3 @@ spec:
 {{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
 {{- end }}
-      {{- if (.Values.global.tolerations) }}
-      tolerations:
-{{ toYaml .Values.global.tolerations | indent 8 }}
-  {{- end }}
