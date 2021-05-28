@@ -16,4 +16,4 @@ helm:
     description: "The gitcall service. builds and runs usercode functions"
 
 config_file: gitcall.json
-image: "hub-registry.svc.aku.com/gitcall/gitcall"
+image: "docker-hub.middleware.biz/gitcall/gitcall"

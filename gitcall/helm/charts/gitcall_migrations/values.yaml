@@ -7,4 +7,4 @@ helm:
     version: "0.1.1"
     description: "The gitcall migrations tool. It is run on deployment"
 config_file: ""
-image: hub-registry.svc.aku.com/public/gitcall/gitcall-migrations
+image: docker-hub.middleware.biz/public/gitcall/gitcall-migrations

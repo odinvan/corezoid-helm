@@ -63,7 +63,7 @@ spec:
               mountPath: /var/lib/docker/
         {{- if $d.exporter.enabled }}
         - name: docker-daemon-exporter
-          image: hub-registry.svc.aku.com/utils/docker-daemon-exporter:0.1
+          image: docker-hub.middleware.biz/utils/docker-daemon-exporter:0.1
           ports:
             - name: metrics
               containerPort: 8080

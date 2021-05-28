@@ -105,7 +105,7 @@ global:
             vhost: '/conveyor'
 docker-registry:
     image:
-        repository: 'registry'
+        repository: 'hub-registry.svc.aku.com/registry'
         tag: '2.7.1'
         pullPolicy: 'IfNotPresent'
     secrets:
@@ -120,6 +120,7 @@ docker-registry:
         path: '/*'
         annotations:
             kubernetes.io/ingress.class: 'nginx'
+            cert-manager.io/cluster-issuer: letsencrypt
     service:
         type: 'NodePort'
         nodePort: 32501
@@ -175,7 +176,7 @@ gitcall_pimp:
                 - secret_name: 'gitcall-comfy-pimp-registry-secret'
                   docker_config:
                     auths:
-                        hub-registry.svc.aku.com:
+                        docker-hub.middleware.biz:
                             username: 'runner'
                             password: 'Lytghjgtnhjdcr'
                         gitcall-registry.corezoid.comfy.ua:
@@ -213,18 +214,18 @@ gitcall_pimp:
                 memory: '500Mi'
         secrets: []
 gitcall:
-    image: 'hub-registry.svc.aku.com/gitcall/gitcall'
+    image: 'docker-hub.middleware.biz/gitcall/gitcall'
     config:
         dundergitcall:
             global_policy:
-                dundergitcall_image: 'hub-registry.svc.aku.com/public/gitcall/dundergitcall:1.0.3'
-                usercode_proxy_image: 'hub-registry.svc.aku.com/public/gitcall/usercode-proxy:1.1.1'
-                usercode_js_runner_image: 'hub-registry.svc.aku.com/public/gitcall/js-runner:0.5.1'
-                usercode_php_runner_image: 'hub-registry.svc.aku.com/public/gitcall/php-runner:0.4.5'
-                usercode_php_runtime_image: 'hub-registry.svc.aku.com/public/gitcall/php-runtime:8.0-1'
-                usercode_python_runner_image: 'hub-registry.svc.aku.com/public/gitcall/python-runner:0.1.3'
-                usercode_python_runtime_image: 'hub-registry.svc.aku.com/public/gitcall/python:3.9-alpine3.13'
-                usercode_java_runner_image: 'hub-registry.svc.aku.com/public/gitcall/java-runner:0.1.5'
+                dundergitcall_image: 'docker-hub.middleware.biz/public/gitcall/dundergitcall:1.0.3'
+                usercode_proxy_image: 'docker-hub.middleware.biz/public/gitcall/usercode-proxy:1.1.1'
+                usercode_js_runner_image: 'docker-hub.middleware.biz/public/gitcall/js-runner:0.5.1'
+                usercode_php_runner_image: 'docker-hub.middleware.biz/public/gitcall/php-runner:0.4.5'
+                usercode_php_runtime_image: 'docker-hub.middleware.biz/public/gitcall/php-runtime:8.0-1'
+                usercode_python_runner_image: 'docker-hub.middleware.biz/public/gitcall/python-runner:0.1.3'
+                usercode_python_runtime_image: 'docker-hub.middleware.biz/public/gitcall/python:3.9-alpine3.13'
+                usercode_java_runner_image: 'docker-hub.middleware.biz/public/gitcall/java-runner:0.1.5'
                 dundergitcall_enabled: true
                 dundergitcall_limit_cpu_milli_cores: 200
                 dundergitcall_limit_memory_mb: 100
@@ -244,7 +245,7 @@ gitcall:
                 usercode_scale_prometheus_server: 'http://prometheus-server.monitoring.svc'
             docker_config:
                 auths:
-                    hub-registry.svc.aku.com:
+                    docker-hub.middleware.biz:
                         username: 'runner'
                         password: 'Lytghjgtnhjdcr'
                     gitcall-registry.corezoid.comfy.ua:
