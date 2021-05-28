@@ -34,7 +34,6 @@ spec:
         - name: main
           imagePullPolicy: {{ $d.image_pull_policy | quote }}
           image: {{ print .Values.image ":" .Values.image_version }}
-
           ports:
             - name: container-port
               containerPort: 2375
@@ -54,7 +53,6 @@ spec:
           {{- end }}
           securityContext:
             privileged: true
-
           volumeMounts:
             - name: config
               mountPath: /etc/docker/daemon.json
@@ -71,13 +69,13 @@ spec:
             - name: data
               mountPath: /var/lib/docker/
         {{- end }}
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/worker
+          operator: Exists
       volumes:
         - name: config
           configMap:
             name: {{ .Release.Name }}-gitcall-docker-server-config
         - name: data
           emptyDir: {}
-      {{- if (.Values.global.tolerations) }}
-      tolerations:
-{{ toYaml .Values.global.tolerations | indent 8 }}
-  {{- end }}
