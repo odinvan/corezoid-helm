@@ -34,6 +34,11 @@ spec:
         - name: main
           imagePullPolicy: {{ $d.image_pull_policy | quote }}
           image: {{ print .Values.image ":" .Values.image_version }}
+          env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+          {{- end }}
           ports:
             - name: container-port
               containerPort: 2375
@@ -62,6 +67,11 @@ spec:
         {{- if $d.exporter.enabled }}
         - name: docker-daemon-exporter
           image: docker-hub.middleware.biz/utils/docker-daemon-exporter:0.1
+          env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+          {{- end }}
           ports:
             - name: metrics
               containerPort: 8080

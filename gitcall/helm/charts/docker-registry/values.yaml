@@ -13,7 +13,7 @@ podAnnotations: {}
 podLabels: {}
 
 image:
-  repository: docker-hub.middleware.biz/library/registry
+  repository: "hub-registry.svc.aku.com/library/registry"
   tag: 2.7.1
   pullPolicy: IfNotPresent
 # imagePullSecrets:

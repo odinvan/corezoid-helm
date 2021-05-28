@@ -71,6 +71,10 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+            {{- end }}
 {{- if .Values.secrets.htpasswd }}
             - name: REGISTRY_AUTH
               value: "htpasswd"

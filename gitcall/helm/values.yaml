@@ -1,9 +1,8 @@
-#    helm install gitcall-comfy --namespace corezoid -f var/helm/values.yaml --atomic --wait --timeout 5m var/helm/?
+# helm install gitcall-comfy --namespace corezoid -f var/helm/values.yaml --atomic --wait --timeout 5m var/helm
 global:
-    tolerations:
-        - key: node-role.kubernetes.io/worker
-          operator: Exists
-          effect: NoSchedule
+    ################################
+    ######## Proxy settings ########
+    http_proxy: http://proxy-lt.svc.aku.com:3128
     release:
         name: 'gitcall_app'
         helm:

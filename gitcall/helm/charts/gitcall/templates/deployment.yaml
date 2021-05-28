@@ -38,12 +38,20 @@ spec:
           image: docker-hub.middleware.biz/public/alpine:3.12
           command: ["sh", "-c", "until nc -zvw1 ${GITCALL_POSTGRESQL_HOST} ${GITCALL_POSTGRESQL_PORT}; do echo waiting for dependencies; sleep 2; done;"]
           env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+            {{- end }}
             # todo secretalreadyexist true
             {{- tpl ($.Files.Get ".helm.env.tpl") $tplVals | indent 12 }}
         - name: init-wait-rabbitmq
           image: docker-hub.middleware.biz/public/alpine:3.12
           command: ["sh", "-c", "until nc -zvw1 ${GITCALL_RABBITMQ_HOST} ${GITCALL_RABBITMQ_PORT}; do echo waiting for dependencies; sleep 2; done;"]
           env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+            {{- end }}
             # todo secretalreadyexist true
             {{- tpl ($.Files.Get ".helm.env.tpl") $tplVals | indent 12 }}
       containers:
@@ -65,6 +73,10 @@ spec:
             {{- end }}
             {{- end }}
           env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+            {{- end }}
             - name: GOPS_CONFIG_DIR
               value: /tmp
             {{- tpl ($.Files.Get ".helm.env.tpl") $tplVals | indent 12 }}

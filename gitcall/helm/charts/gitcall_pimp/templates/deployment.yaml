@@ -54,6 +54,10 @@ spec:
             {{- end }}
             {{- end }}
           env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+            {{- end }}
             - name: GOPS_CONFIG_DIR
               value: /tmp
             {{- include "gitcall_pimp_env_secrets" $d.secrets | indent 12 }}
