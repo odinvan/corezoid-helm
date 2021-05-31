@@ -38,7 +38,15 @@ spec:
             {{- if .Values.global.http_proxy }}
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
-          {{- end }}
+            {{- end }}
+            {{- if .Values.global.https_proxy }}
+            - name: https_proxy
+              value: {{ .Values.global.https_proxy }}
+            {{- end }}
+            {{- if .Values.global.no_proxy }}
+            - name: no_proxy
+              value: {{ .Values.global.no_proxy }}
+            {{- end }}
           ports:
             - name: container-port
               containerPort: 2375
@@ -71,7 +79,15 @@ spec:
             {{- if .Values.global.http_proxy }}
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
-          {{- end }}
+            {{- end }}
+            {{- if .Values.global.https_proxy }}
+            - name: https_proxy
+              value: {{ .Values.global.https_proxy }}
+            {{- end }}
+            {{- if .Values.global.no_proxy }}
+            - name: no_proxy
+              value: {{ .Values.global.no_proxy }}
+            {{- end }}
           ports:
             - name: metrics
               containerPort: 8080
