@@ -4,7 +4,7 @@ global:
     ######## Proxy settings ########
     http_proxy: http://proxy-lt.svc.aku.com:3128
     https_proxy: http://proxy-lt.svc.aku.com:3128
-    no_proxy: '.corezoid.svc.cluster.local,.corezoid.comfy.ua,.middleware.biz,10.15.0.0/16'
+    no_proxy: 'gitcall-comfy-gitcall-pimp-service,.corezoid.svc.cluster.local,.corezoid.comfy.ua,.middleware.biz,10.15.0.0/16'
     release:
         name: 'gitcall_app'
         helm:
