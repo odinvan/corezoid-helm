@@ -403,7 +403,7 @@ docker-registry:
     ingress:
         enabled: true
         hosts: ['gitcall-registry.corezoid.comfy.ua']
-        path: '/*'
+        path: '/'
         annotations:
             kubernetes.io/ingress.class: 'nginx'
         tls:
