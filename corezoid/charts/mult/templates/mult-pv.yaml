@@ -12,7 +12,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /ebsmnt/{{ .Release.Name }}/{{ .Values.appName }}
 {{- end }}

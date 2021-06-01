@@ -29,6 +29,10 @@ spec:
           image: "{{ .Values.global.imageRegistry }}/public/alpine"
           command: ["sh", "-c", "apk add postgresql-client; until PGPASSWORD=${POSTGRES_DBPWD} psql -h ${POSTGRES_DBHOST} -U ${POSTGRES_DBUSER} -d settings -c \"select 1\" > /dev/null 2>&1 ;  {{- if .Values.global.mq.internal }} nc -zvw1 rabbit-service 5672  {{- else }}  nc -zvw1  ${MQ_HOST} ${MQ_PORT}  {{- end }}; do echo waiting for dependences; sleep 3; done;"]
           env:
+            {{- if .Values.global.http_proxy }}
+            - name: http_proxy
+              value: {{ .Values.global.http_proxy }}
+            {{- end }}
             - name: MQ_HOST
               valueFrom:
                 secretKeyRef:
@@ -63,10 +67,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbpwd
-            {{- if .Values.global.http_proxy }}
-            - name: http_proxy
-              value: {{ .Values.global.http_proxy }}
-            {{- end }}
+
         - name: init-wait-rmq
           image: "{{ .Values.global.imageRegistry }}/public/alpine"
           command: ['sh']

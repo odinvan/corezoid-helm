@@ -420,8 +420,8 @@ global:
   # gitcall | worker and rabbit settings
   gitcall:
     # true or false
-    enabled: false
-    mq_vhost: "/gitcall"
+    enabled: true
+    mq_vhost: "/conveyor"
     dunder_mq_vhost: "/dundergitcall"
 
 
