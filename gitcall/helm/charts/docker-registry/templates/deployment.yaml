@@ -75,6 +75,14 @@ spec:
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
             {{- end }}
+            {{- if .Values.global.https_proxy }}
+            - name: https_proxy
+              value: {{ .Values.global.https_proxy }}
+            {{- end }}
+            {{- if .Values.global.no_proxy }}
+            - name: no_proxy
+              value: {{ .Values.global.no_proxy }}
+            {{- end }}
 {{- if .Values.secrets.htpasswd }}
             - name: REGISTRY_AUTH
               value: "htpasswd"

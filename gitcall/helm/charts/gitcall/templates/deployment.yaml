@@ -42,6 +42,14 @@ spec:
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
             {{- end }}
+            {{- if .Values.global.https_proxy }}
+            - name: https_proxy
+              value: {{ .Values.global.https_proxy }}
+            {{- end }}
+            {{- if .Values.global.no_proxy }}
+            - name: no_proxy
+              value: {{ .Values.global.no_proxy }}
+            {{- end }}
             # todo secretalreadyexist true
             {{- tpl ($.Files.Get ".helm.env.tpl") $tplVals | indent 12 }}
         - name: init-wait-rabbitmq
@@ -51,6 +59,14 @@ spec:
             {{- if .Values.global.http_proxy }}
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
+            {{- end }}
+            {{- if .Values.global.https_proxy }}
+            - name: https_proxy
+              value: {{ .Values.global.https_proxy }}
+            {{- end }}
+            {{- if .Values.global.no_proxy }}
+            - name: no_proxy
+              value: {{ .Values.global.no_proxy }}
             {{- end }}
             # todo secretalreadyexist true
             {{- tpl ($.Files.Get ".helm.env.tpl") $tplVals | indent 12 }}
@@ -76,6 +92,14 @@ spec:
             {{- if .Values.global.http_proxy }}
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
+            {{- end }}
+            {{- if .Values.global.https_proxy }}
+            - name: https_proxy
+              value: {{ .Values.global.https_proxy }}
+            {{- end }}
+            {{- if .Values.global.no_proxy }}
+            - name: no_proxy
+              value: {{ .Values.global.no_proxy }}
             {{- end }}
             - name: GOPS_CONFIG_DIR
               value: /tmp
