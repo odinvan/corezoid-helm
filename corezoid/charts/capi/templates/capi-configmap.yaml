@@ -237,9 +237,9 @@ data:
 
         {mw_db_call, [
             {enabled, true},
-            {db_call_host, "http://dbcall.corezoid.comfy.ua/"},
+            {db_call_host, "http://dbcall.corezoid.comfy.ua"},
             {request_amqp, [
-                {host, <<"rabbit-service">>},
+                {host, <<"rabbit-service.corezoid.svc">>},
                 {port, 5672},
                 {username, <<"${MQ_USERNAME}">>},
                 {password, <<"${MQ_PASSWORD}">>},
@@ -252,7 +252,7 @@ data:
                 {is_durable_queue, true}
             ]},
             {response_amqp, [
-                {host, <<"rabbit-service">>},
+                {host, <<"rabbit-service.corezoid.svc">>},
                 {port, 5672},
                 {username, <<"${MQ_USERNAME}">>},
                 {password, <<"${MQ_PASSWORD}">>},
