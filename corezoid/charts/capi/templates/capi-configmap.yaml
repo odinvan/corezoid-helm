@@ -86,26 +86,44 @@ data:
           {scheme, "https://"}
         ]},
 
+
         {ermql, [
 
             {publish_request, [
             {servers, [
           {{- if eq .Values.global.mq.internal false }}
               [
-              {host, "${MQ_HOST}"},
-              {port, ${MQ_PORT}},
-              {username, <<"${MQ_USERNAME}">>},
-              {password, <<"${MQ_PASSWORD}">>},
-              {vhost, <<"${MQ_VHOST}">>}
-            ]
-          {{- else }}
-                  [
-                    {host, "rabbit-service"},
-                    {port, 5672},
-                    {username, <<"${MQ_USERNAME}">>},
-                    {password, <<"${MQ_PASSWORD}">>},
-                    {vhost, <<"${MQ_VHOST}">>}
-                ]
+                {host, "${MQ_HOST}"},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+            ],
+              [
+                {host, "${MQ_HOST}"},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"/dbcall">>},
+                {pools, [dbcall]}
+              ]
+
+    {{- else }}
+              [
+                {host, "rabbit-service"},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+              ],
+              [
+                {host, "rabbit-service"},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"/dbcall">>},
+                {pools, [dbcall]}
+              ]
           {{- end }}
             ]},
               {queues_count, 1},
@@ -123,14 +141,31 @@ data:
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
+                ],
+                [
+                    {host, "${MQ_HOST}"},
+                    {port, ${MQ_PORT}},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"/dbcall">>},
+                    {pools, [dbcall]}
                 ]
-          {{- else }}
+
+    {{- else }}
                   [
                     {host, "rabbit-service"},
                     {port, 5672},
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
+                ],
+                [
+                    {host, "rabbit-service"},
+                    {port, ${MQ_PORT}},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"/dbcall">>},
+                    {pools, [dbcall]}
                 ]
           {{- end }}
             ]},
@@ -198,6 +233,36 @@ data:
             {health_url, "http://merchant-service:7980/actuator/health"}
         ]},
 
+
+
+        {mw_db_call, [
+            {enabled, true},
+            {db_call_host, "http://dbcall.corezoid.comfy.ua/"},
+            {request_amqp, [
+                {host, <<"rabbit-service">>},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"/dbcall">>},
+                {exchange, <<"db-call">>},
+                {is_durable_exchange, true},
+                {is_auto_delete_exchange, false},
+                {prefetch, 100},
+                {is_auto_delete_queue, false},
+                {is_durable_queue, true}
+            ]},
+            {response_amqp, [
+                {host, <<"rabbit-service">>},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"/dbcall">>}
+            ]},
+            {response_queue, <<"mw_dunderdbcall_response_queue_">>}
+        ]},
+
+
+
         {enigma, [
           {is_enabled, {{ .Values.global.enigma.enabled }}},
           {private_key_id, "{{ .Values.global.capi.enigma_pk_id }}"},
@@ -214,7 +279,8 @@ data:
         {capi,
             [
                 {{- if .Values.global.gitcall.enabled }}
-                {components, [<<"git_call">>]}, %% Enabling/disabling components. Uses mostly by frontend
+        {components, [<<"git_call">>, <<"db_call">>]}, %% Enabling/disabling components. Uses mostly by frontend
+
                 {{- end }}
                 %% It must be changed to unique name for every api node. It's personal
                 %% queue where will come messages from others api nodes.
@@ -938,7 +1004,7 @@ data:
 
             {log_root, "/ebsmnt/erlang/capi/log"},
             {handlers, [
-                {lager_console_backend, info},
+                {lager_console_backend, debug},
                 {lager_file_backend, [{file, "error.log"}, {level, error}, {size, 734003200}, {date, "$D0"}, {count, 1}]} %%,
                 %%{lager_file_backend, [{file, "console.log"}, {level, info}, {size, 734003200}, {date, "$D0"}, {count, 1}]}
             ]},
