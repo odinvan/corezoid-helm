@@ -15,7 +15,6 @@ global:
             context: 'comfy'
             namespace: 'corezoid'
             release: 'gitcall-comfy'
-#            deploy: ['gitcall_docker_server', 'gitcall_migrations', 'gitcall', 'gitcall_pimp', 'docker-registry', 'gitcall_amulet', 'kube']
             deploy: ['gitcall_docker_server',  'gitcall', 'gitcall_pimp', 'docker-registry', 'gitcall_amulet', 'kube']
         require:
             docker-registry: '2.0.0'
@@ -99,13 +98,13 @@ global:
             username: 'app-user'
             password: 'passwertws'
             port: 5672
-            vhost: '/conveyor'
+            vhost: '/dundergitcall'
         dundergitcall_task:
             host: 'rabbit-service'
             username: 'app-user'
             password: 'passwertws'
             port: 5672
-            vhost: '/conveyor'
+            vhost: '/dundergitcall'
 postgresql_credentials:
     gitcall:
         host: 'pg-postgresql'
@@ -164,15 +163,15 @@ gitcall:
                 usercode_request_cpu_milli_cores: 100
                 usercode_request_memory_mb: 50
                 usercode_scale_cpu_average_utilization: 80
-                usercode_scale_prometheus_server: 'http://prometheus-server.monitoring.svc'
+                usercode_scale_prometheus_server: 'http://prometheus.lens-metrics.svc'
             docker_config:
                 auths:
                     docker-hub.middleware.biz:
                         username: 'runner'
                         password: 'Lytghjgtnhjdcr'
                     gitcall-registry.corezoid.comfy.ua:
-                        username: 'gitcall'
-                        password: 'Y9BmDTKT5JRp7mWT'
+                        username: 'k8s'
+                        password: 'As9nyF9ZV2r2x49EcBNb'
             docker_daemon:
                 discovery: 'dns'
                 host: 'gitcall-comfy-gitcall-docker-server-service'
@@ -183,7 +182,7 @@ gitcall:
                 port: 6527
             k8s:
                 network_policy: false
-                single_namespace: 'gitcall-comfy'
+                single_namespace: 'corezoid'
             logger:
                 format: 'text'
                 level: 'debug'
@@ -395,11 +394,7 @@ docker-registry:
         tag: '2.7.1'
         pullPolicy: 'IfNotPresent'
     secrets:
-        htpasswd: 'k8s:$2y$05$PjIZxG9e7gzDUHJ0f1f7MuP6UGl5OwyZ2hrqg6BfH8PuVAuTMZBES
-
-            gitcall:$2y$05$ibp8WAh2tPlNNN4vpIQNWOay1psM4wSC7TEKCB2pzlhSh.XWRPIwu
-
-'
+        htpasswd: 'k8s:$2y$05$PjIZxG9e7gzDUHJ0f1f7MuP6UGl5OwyZ2hrqg6BfH8PuVAuTMZBES'
     ingress:
         enabled: true
         hosts: ['gitcall-registry.corezoid.comfy.ua']
@@ -412,7 +407,7 @@ docker-registry:
           - gitcall-registry.corezoid.comfy.ua
     service:
         type: 'NodePort'
-        nodePort: 32506
+        nodePort: 32508
     configData:
         storage:
             delete:
@@ -492,13 +487,3 @@ gitcall_pimp:
                 cpu: '500m'
                 memory: '500Mi'
         secrets: []
-#gitcall_migrations:
-#    config:
-#        db: 'gitcall'
-#        dir: '/'
-#        host: 'pg-postgresql'
-#        migrator_password: 'ygyegyg8'
-#        migrator_username: 'postgres'
-#        port: 5432
-#    helm:
-#        image_pull_secrets: []
