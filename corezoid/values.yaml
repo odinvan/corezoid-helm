@@ -100,14 +100,14 @@ global:
     # Maximum number of client connections allowed.
     maxclientconn: "100000"
     # How many server connections to allow per user/database pair. Can be overridden in the per-database configuration.
-    default_pool_size: "5000"
+    default_pool_size: "8000"
     # Server is released back to pool after transaction finishes. default: session, see man https://wiki.postgresql.org/wiki/PgBouncer
     # transaction | session
     default_pool_mode: transaction
 
     # Postgres corezoid schema version
     postgres_schema:
-      version: "5.6.0"
+      version: "5.6.1"
 
     rotation:
       ## enabled: true or false
@@ -181,9 +181,9 @@ global:
   ########  Settings for Corezoid services  ########
   ## Settings for API Corezoid
   capi:
-    tag: "7.6.1.0"
+    tag: "7.6.1.1"
     minReplicas: 2
-    maxReplicas: 20
+    maxReplicas: 10
     resources:
       limits:
         cpu: 2
@@ -287,15 +287,15 @@ global:
   # usercode
   usercode:
     tag: "7.2.1"
-    minReplicas: 2
-    maxReplicas: 8
+    minReplicas: 1
+    maxReplicas: 6
     # application resources limits and requests
     resources:
       limits:
-        cpu: 2
-        memory: 2000Mi
+        cpu: 4
+        memory: 4000Mi
       requests:
-        cpu: 2
+        cpu: 3
         memory: 2000Mi
     # enigma private_key_id
     enigma_pk_id: ""
@@ -319,8 +319,8 @@ global:
   # mult
   mult:
     tag: "2.5.1.0"
-    minReplicas: 2
-    maxReplicas: 15
+    minReplicas: 1
+    maxReplicas: 5
     ## pvc name if it already exist or was created manualy
     persistantVolumeClaimName: "mult-pvc"
     ## true if pvc for mult should be created automaticaly
@@ -329,11 +329,11 @@ global:
     # application resources limits and requests
     resources:
       limits:
-        cpu: 1600m
-        memory: 2000Mi
+        cpu: 4000m
+        memory: 4000Mi
       requests:
-        cpu: 500m
-        memory: 800Mi
+        cpu: 1500m
+        memory: 1500Mi
     # enigma private_key_id
     enigma_pk_id: ""
 
@@ -358,7 +358,7 @@ global:
   # syncapi
   syncapi:
     subdomain: "syncapi"
-    tag: "2.0.3"
+    tag: "2.0.4"
     minReplicas: 2
     maxReplicas: 20
     resources:

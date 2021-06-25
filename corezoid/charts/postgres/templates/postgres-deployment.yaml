@@ -57,6 +57,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}-root
                   key: dbsuperuserpwd
+            - name: POSTGRESQL_MAX_CONNECTIONS
+              value: "1500"
           ports:
             - containerPort: 5432
               name: {{ .Values.appName }}
