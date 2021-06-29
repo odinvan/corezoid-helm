@@ -87,6 +87,7 @@ users, virtual hosts, permissions and parameters) to load by the management plug
   "vhosts": [
     { "name": {{ .Values.global.mq.secret.data.vhost | quote }} },
     { "name":  "/gitcall" },
+    { "name":  "/dbcall" },
     { "name": "/dundergitcall" },
     {
       "name": {{ .Values.rabbitmqVhost | quote }}
@@ -105,6 +106,13 @@ users, virtual hosts, permissions and parameters) to load by the management plug
     {
       "user": {{ .Values.global.mq.secret.data.username | quote }},
       "vhost": "/gitcall",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    },
+    {
+      "user": {{ .Values.global.mq.secret.data.username | quote }},
+      "vhost": "/dbcall",
       "configure": ".*",
       "read": ".*",
       "write": ".*"
