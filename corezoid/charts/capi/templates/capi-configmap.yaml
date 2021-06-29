@@ -912,7 +912,7 @@ data:
                 {send_interval, 5},
                 {disabled, true}
             ]},
-
+            {bot_wizzard_conv, 6929},
             {sender, [
                 %% sender communication
                 {sender_build_form_url, "https://api-conv.corezoid.comfy.ua"}, %% for build form url

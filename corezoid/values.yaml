@@ -225,7 +225,7 @@ global:
         # enabled Market button
         market: false
         # button Create -> Bot platform
-        bot_platform: false
+        bot_platform: true
         # billing button display
         billing: false
         # display of the git_call button
