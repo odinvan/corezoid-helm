@@ -42,13 +42,13 @@ spec:
       containers:
       - name: master
         image: "{{ .Values.global.imageRegistry }}/{{ .Values.global.repotype | default "public" }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        resources:
-          limits:
-            cpu: 300m
-            memory: 700Mi
-          requests:
-            cpu: 50m
-            memory: 600Mi
+{{/*        resources:*/}}
+{{/*          limits:*/}}
+{{/*            cpu: 300m*/}}
+{{/*            memory: 700Mi*/}}
+{{/*          requests:*/}}
+{{/*            cpu: 50m*/}}
+{{/*            memory: 600Mi*/}}
         readinessProbe:
           exec:
             command:

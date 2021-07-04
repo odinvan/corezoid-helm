@@ -90,13 +90,13 @@ spec:
             successThreshold: 1
             failureThreshold: 6
                 {{- end }}
-          resources:
-            limits:
-              cpu: 1500m
-              memory: 1500Mi
-            requests:
-              cpu: 300m
-              memory: 400Mi
+{{/*          resources:*/}}
+{{/*            limits:*/}}
+{{/*              cpu: 1500m*/}}
+{{/*              memory: 1500Mi*/}}
+{{/*            requests:*/}}
+{{/*              cpu: 300m*/}}
+{{/*              memory: 400Mi*/}}
       {{- if (.Values.global.tolerations) }}
       tolerations:
 {{ toYaml .Values.global.tolerations | indent 8 }}
