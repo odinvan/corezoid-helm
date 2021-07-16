@@ -428,8 +428,8 @@ global:
   # conf-agent-server
   conf_agent_server:
     tag: "1.5.2"
-    minReplicas: 1
-    maxReplicas: 1
+    minReplicas: 2
+    maxReplicas: 2
     resources:
       limits:
         cpu: 1200m
@@ -440,7 +440,7 @@ global:
 
   limits:
     tag: "1.2.2"
-    minReplicas: 1
+    minReplicas: 2
 
   tolerations:
   - effect: NoSchedule
