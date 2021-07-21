@@ -8,7 +8,7 @@ metadata:
 spec:
   storageClassName: {{ .Values.global.storageClassName }}
   capacity:
-    storage: 1Gi
+    storage: 6Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
