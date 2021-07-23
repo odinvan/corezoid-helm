@@ -77,14 +77,14 @@ global:
                     path: 'rabbitmq_credentials'
     postgresql_credentials:
         gitcall:
-            host: 'pg-postgresql'
+            host: '172.16.7.39'
             password: '8hhgasdgiuf'
-            port: 5432
+            port: 5000
             username: 'internal_user'
         main:
-            host: 'pg-postgresql'
+            host: '172.16.7.39'
             password: '8hhgasdgiuf'
-            port: 5432
+            port: 5000
             username: 'internal_user'
     rabbitmq_credentials:
         gitcall:
@@ -107,14 +107,14 @@ global:
             vhost: '/dundergitcall'
 postgresql_credentials:
     gitcall:
-        host: 'pg-postgresql'
+        host: '172.16.7.39'
         password: '8hhgasdgiuf'
-        port: 5432
+        port: 5000
         username: 'internal_user'
     main:
-        host: 'pg-postgresql'
+        host: '172.16.7.39'
         password: '8hhgasdgiuf'
-        port: 5432
+        port: 5000
         username: 'internal_user'
 rabbitmq_credentials:
     gitcall:
