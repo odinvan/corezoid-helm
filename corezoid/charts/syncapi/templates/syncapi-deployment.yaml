@@ -51,6 +51,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.mq.secret.name }}
                   key: password
+      shareProcessNamespace: true
       containers:
         - name: {{ .Values.appName }}
           image: "{{ .Values.global.imageRegistry }}/{{ .Values.global.repotype}}{{ .Values.image.repository }}:{{ .Values.global.syncapi.tag }}"

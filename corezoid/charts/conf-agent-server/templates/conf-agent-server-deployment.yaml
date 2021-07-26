@@ -67,6 +67,7 @@ spec:
 {{/*            - name: http_proxy*/}}
 {{/*              value: {{ .Values.global.http_proxy }}*/}}
 {{/*            {{- end }}*/}}
+      shareProcessNamespace: true
       containers:
         - name: {{ .Values.appName }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | default "IfNotPresent" }}
