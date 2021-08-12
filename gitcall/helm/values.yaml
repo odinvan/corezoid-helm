@@ -401,6 +401,7 @@ docker-registry:
         path: '/'
         annotations:
             kubernetes.io/ingress.class: 'nginx'
+            cert-manager.io/cluster-issuer: 'letsencrypt'
         tls:
         - secretName: tls-gitcall-ingress-corezoid
           hosts:
