@@ -106,7 +106,7 @@ data:
                 {port, ${MQ_PORT}},
                 {username, <<"${MQ_USERNAME}">>},
                 {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"/dbcall">>}
+                {vhost, <<"/dbcall">>},
                 {pools, [dbcall]}
               ]
 

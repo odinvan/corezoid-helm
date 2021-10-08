@@ -162,7 +162,7 @@ global:
   mq:
     # if internal true - create and use internal rmq container
     # if internal false - enable external rmq (on aws ec2 instances as example)
-    internal: true
+    internal: false
     ## secret configuration for rabbitmq
     secret:
       ## true - secret will be created automatically with provided values
@@ -170,7 +170,7 @@ global:
       create: true
       name: "rabbitmq-secret"
       data:
-        host: "rabbit-service"
+        host: "172.16.6.77"
         port: "5672"
         vhost: "/conveyor"
         username: "app-user"
