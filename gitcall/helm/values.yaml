@@ -88,19 +88,19 @@ global:
             username: 'internal_user'
     rabbitmq_credentials:
         gitcall:
-            host: 'rabbit-service'
+            host: '172.16.6.77'
             username: 'app-user'
             password: 'passwertws'
             port: 5672
             vhost: '/conveyor'
         dundergitcall_system:
-            host: 'rabbit-service'
+            host: '172.16.6.77'
             username: 'app-user'
             password: 'passwertws'
             port: 5672
             vhost: '/dundergitcall'
         dundergitcall_task:
-            host: 'rabbit-service'
+            host: '172.16.6.77'
             username: 'app-user'
             password: 'passwertws'
             port: 5672
@@ -118,19 +118,19 @@ postgresql_credentials:
         username: 'internal_user'
 rabbitmq_credentials:
     gitcall:
-        host: 'rabbit-service'
+        host: '172.16.6.77'
         username: 'app-user'
         password: 'passwertws'
         port: 5672
         vhost: '/conveyor'
     dundergitcall_system:
-        host: 'rabbit-service'
+        host: '172.16.6.77'
         username: 'app-user'
         password: 'passwertws'
         port: 5672
         vhost: '/conveyor'
     dundergitcall_task:
-        host: 'rabbit-service'
+        host: '172.16.6.77'
         username: 'app-user'
         password: 'passwertws'
         port: 5672
