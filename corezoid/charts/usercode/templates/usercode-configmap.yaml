@@ -100,7 +100,7 @@ data:
           {password, "${MQ_PASSWORD}"},
           {{- end }}
           {vhost, "${MQ_VHOST}"},
-          {gc_queues_regexp, ["cce.ctrl", "settings.cce"]}
+          {gc_queues_regexp, ["cce.ctrl", "settings.cce", "cce(.*).response$", "es_call(.*).response$", "git_call(.*).response$"]}
         ]},
 
       %% for clustering components
