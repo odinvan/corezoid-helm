@@ -264,7 +264,7 @@ global:
   # http-worker
   http:
     tag: "3.5.1.0"
-    minReplicas: 2
+    minReplicas: 3
     maxReplicas: 20
     resources:
       limits:
@@ -304,7 +304,7 @@ global:
   # conveyor-worker
   worker:
     tag: "4.6.1.0"
-    minReplicas: 2
+    minReplicas: 3
     maxReplicas: 20
     # application resources limits and requests
     resources:
