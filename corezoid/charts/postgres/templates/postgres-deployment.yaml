@@ -21,7 +21,7 @@ spec:
       initContainers:
         #### https://github.com/docker-library/postgres/issues/563
         - name: pgsql-data-permission-fix
-          image: "{{ .Values.global.imageRegistry }}/busybox"
+          image: busybox
           command:
             - sh
             - -c
@@ -39,7 +39,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.appName }}-{{ .Values.global.storage}}-claim
       containers:
-        - image: "{{ .Values.global.imageRegistry }}/postgres:9.6.2-alpine"
+        - image: "postgres:9.6.2-alpine"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | default "IfNotPresent" }}
           name: {{ .Values.appName }}
           securityContext:
@@ -57,8 +57,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}-root
                   key: dbsuperuserpwd
-            - name: POSTGRESQL_MAX_CONNECTIONS
-              value: "1500"
           ports:
             - containerPort: 5432
               name: {{ .Values.appName }}
@@ -90,17 +88,13 @@ spec:
             successThreshold: 1
             failureThreshold: 6
                 {{- end }}
-{{/*          resources:*/}}
-{{/*            limits:*/}}
-{{/*              cpu: 1500m*/}}
-{{/*              memory: 1500Mi*/}}
-{{/*            requests:*/}}
-{{/*              cpu: 300m*/}}
-{{/*              memory: 400Mi*/}}
-      {{- if (.Values.global.tolerations) }}
-      tolerations:
-{{ toYaml .Values.global.tolerations | indent 8 }}
-      {{- end }}
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 1500Mi
+            requests:
+              cpu: 300m
+              memory: 400Mi
       volumes:
         - name: {{ .Values.appName }}-claim
           persistentVolumeClaim:

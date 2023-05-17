@@ -1,4 +1,3 @@
 dependencies:
   - name: ingress
     repository: "stable/nginx-ingress"
-    condition: global.ingress.deploy_nginx

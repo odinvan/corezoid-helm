@@ -5,10 +5,7 @@ kind: PodSecurityPolicy
 metadata:
   name: {{ template "nfs-subdir-external-provisioner.fullname" . }}
   labels:
-    app: {{ template "nfs-subdir-external-provisioner.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+    {{- include "nfs-subdir-external-provisioner.labels" . | nindent 4 }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false
@@ -17,6 +14,7 @@ spec:
   volumes:
     - 'secret'
     - 'nfs'
+    - 'persistentVolumeClaim'
   hostNetwork: false
   hostIPC: false
   hostPID: false

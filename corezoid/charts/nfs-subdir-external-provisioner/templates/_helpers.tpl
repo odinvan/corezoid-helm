@@ -60,3 +60,44 @@ Return the appropriate apiVersion for podSecurityPolicy.
 {{- print "extensions/v1beta1" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the appropriate apiVersion for podDisruptionBudget.
+*/}}
+{{- define "podDisruptionBudget.apiVersion" -}}
+{{- if semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- print "policy/v1" -}}
+{{- else -}}
+{{- print "policy/v1beta1" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "nfs-subdir-external-provisioner.labels" -}}
+chart: {{ template "nfs-subdir-external-provisioner.chart" . }}
+heritage: {{ .Release.Service }}
+{{ include "nfs-subdir-external-provisioner.selectorLabels" . }}
+{{- with .Values.labels }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Pod template labels
+*/}}
+{{- define "nfs-subdir-external-provisioner.podLabels" -}}
+{{ include "nfs-subdir-external-provisioner.selectorLabels" . }}
+{{- with .Values.labels }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "nfs-subdir-external-provisioner.selectorLabels" -}}
+app: {{ template "nfs-subdir-external-provisioner.name" . }}
+release: {{ .Release.Name }}
+{{- end }}

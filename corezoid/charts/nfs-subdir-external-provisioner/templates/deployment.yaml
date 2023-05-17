@@ -4,29 +4,29 @@ kind: Deployment
 metadata:
   name: {{ template "nfs-subdir-external-provisioner.fullname" . }}
   labels:
-    app: {{ template "nfs-subdir-external-provisioner.name" . }}
-    chart: {{ template "nfs-subdir-external-provisioner.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+    {{- include "nfs-subdir-external-provisioner.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
     type: {{ .Values.strategyType }}
   selector:
     matchLabels:
-      app: {{ template "nfs-subdir-external-provisioner.name" . }}
-      release: {{ .Release.Name }}
+      {{- include "nfs-subdir-external-provisioner.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
-      {{- if and (.Values.global.tolerations) (semverCompare "<1.6-0" .Capabilities.KubeVersion.GitVersion) }}
-        scheduler.alpha.kubernetes.io/tolerations: '{{ toJson .Values.global.tolerations }}'
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if and (.Values.tolerations) (semverCompare "<1.6-0" .Capabilities.KubeVersion.GitVersion) }}
+        scheduler.alpha.kubernetes.io/tolerations: '{{ toJson .Values.tolerations }}'
       {{- end }}
       labels:
-        app: {{ template "nfs-subdir-external-provisioner.name" . }}
-        release: {{ .Release.Name }}
+        {{- include "nfs-subdir-external-provisioner.podLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ template "nfs-subdir-external-provisioner.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
@@ -38,16 +38,18 @@ spec:
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName | quote }}
       {{- end }}
-      {{- if .Values.imagePullSecrets }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .Values.imagePullSecrets | indent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.global.imageRegistry}}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
-            - name: nfs-subdir-external-provisioner-root
+            - name: {{ .Values.nfs.volumeName }}
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
@@ -65,7 +67,7 @@ spec:
 {{ toYaml . | indent 12 }}
           {{- end }}
       volumes:
-        - name: nfs-subdir-external-provisioner-root
+        - name: {{ .Values.nfs.volumeName }}
 {{- if .Values.buildMode }}
           emptyDir: {}
 {{- else if .Values.nfs.mountOptions }}
@@ -76,8 +78,8 @@ spec:
             server: {{ index .Values "global" "nfs-client" "server" }}
             path: {{ index .Values "global" "nfs-client" "path" }}
 {{- end }}
-      {{- if and (.Values.global.tolerations) (semverCompare "^1.6-0" .Capabilities.KubeVersion.GitVersion) }}
+      {{- if and (.Values.tolerations) (semverCompare "^1.6-0" .Capabilities.KubeVersion.GitVersion) }}
       tolerations:
-{{ toYaml .Values.global.tolerations | indent 6 }}
+{{ toYaml .Values.tolerations | indent 6 }}
       {{- end }}
 {{- end }}

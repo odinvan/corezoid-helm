@@ -78,7 +78,7 @@ spec:
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.global.tolerations }}
+    {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -89,7 +89,7 @@ spec:
           emptyDir: {}
 {{- end }}
 
-{{- if .Values.persistence.enabled }}
+{{- if .Values.global.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: data

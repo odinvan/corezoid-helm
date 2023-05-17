@@ -36,10 +36,16 @@ global:
 
   ###########################################
   ######## Settings for filesystems #########
-  # Define global storage class: efs / nfs / nfs-client / manual
+  # Define global storage class: efs / nfs / manual
   storage: nfs-client
   # Define global storageClass name
   storageClassName: "nfs-client"
+  ######## Settings AWS EFS filesystem   ########
+  efs:
+    awsRegion: "eu-west-1"
+    efsFileSystemId: "fs-5b5cee6f"
+    ## set true if you choose storage: efs
+    enabled: false
   ######## Settings NFS filesystem   ########
   nfs:
     ## set true if you choose storage: nfs
@@ -50,13 +56,6 @@ global:
     enabled: true
     server: 172.16.0.11
     path: /opt/nfs/k8s/corezoid
-
-  ######## Settings AWS EFS filesystem   ########
-  efs:
-    awsRegion: "eu-west-1"
-    efsFileSystemId: "fs-1388e9d9"
-    ## set true if you choose storage: efs
-    enabled: false
 
   ########  Settings for stateful services  ########
 
@@ -98,17 +97,24 @@ global:
     bouncer: true
     bouncer_minReplicas: "2"
     bouncer_maxReplicas: "4"
+    bouncer_resources:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
     # Maximum number of client connections allowed.
     maxclientconn: "100000"
     # How many server connections to allow per user/database pair. Can be overridden in the per-database configuration.
-    default_pool_size: "8000"
+    default_pool_size: "5000"
     # Server is released back to pool after transaction finishes. default: session, see man https://wiki.postgresql.org/wiki/PgBouncer
     # transaction | session
     default_pool_mode: transaction
 
     # Postgres corezoid schema version
     postgres_schema:
-      version: "5.6.1"
+      version: "5.7.0"
 
     rotation:
       ## enabled: true or false
@@ -133,10 +139,20 @@ global:
       ## false - secret should be created manually
       create: true
       name: "redis-secret"
+      # you can specify different servers for redis for counters, cache and timers  - or specify the same server in variables
       data:
         host: "172.16.6.70"
         port: "6379"
         password: "Acoofelahph4da8Z"
+        # default redis for cache
+        host_cache: "172.16.6.70"
+        port_cache: "6379"
+        password_cache: "Acoofelahph4da8Z"
+        # default redis for timers
+        host_timers: "172.16.6.70"
+        port_timers: "6379"
+        password_timers: "Acoofelahph4da8Z"
+
 
 
   #######  Elasticsearch  ########
@@ -182,16 +198,16 @@ global:
   ########  Settings for Corezoid services  ########
   ## Settings for API Corezoid
   capi:
-    tag: "7.6.1.1"
+    tag: "7.7.0.1"
     minReplicas: 2
-    maxReplicas: 10
+    maxReplicas: 4
     resources:
       limits:
         cpu: 2
-        memory: 2000Mi
+        memory: 2048Mi
       requests:
         cpu: 2
-        memory: 2000Mi
+        memory: 2048Mi
     ## restricting user registration only within the domains specified below if enabled
     registration_restriction:
       enable: false
@@ -259,53 +275,124 @@ global:
     # enigma private_key_id
     enigma_pk_id: ""
 
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - capi
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - capi
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+
+
   ########  Settings for services  ########
 
   # http-worker
   http:
-    tag: "3.5.1.0"
+    tag: "3.6.0.1"
     minReplicas: 3
-    maxReplicas: 20
+    maxReplicas: 6
     resources:
       limits:
         cpu: 2
-        memory: 1000Mi
+        memory: 2048Mi
       requests:
         cpu: 2
-        memory: 1000Mi
+        memory: 2048Mi
     max_http_resp_size: "5242880"
     blocked_domains:
       - "169.254.169.254"
       - "mail.ru"
     tune:
       http_consumer_queues_count: 8
+      ## The specified number of tcp connections will be created for each queue
       http_consumer_connections_per_queue: 1
+      ## Virtual connections for one connections_per_queue
       http_consumer_channels_per_connection: 1
+      ## The number of queues within the channel
       http_consumer_messages_prefetch_size_per_channel: 20
       consumer_settings_messages_prefetch_size_per_channel: 50
+      ## The number of queues within the channel
       consumer_response_prefetch_size_per_channel: 50
+
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - http-worker
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - http-worker
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
 
   # usercode
   usercode:
     tag: "7.2.1"
     minReplicas: 2
-    maxReplicas: 6
+    maxReplicas: 4
     # application resources limits and requests
     resources:
       limits:
         cpu: 4
-        memory: 4000Mi
+        memory: 2048Mi
       requests:
-        cpu: 3
-        memory: 2000Mi
+        cpu: 4
+        memory: 2048Mi
     # enigma private_key_id
     enigma_pk_id: ""
 
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - usercode
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - usercode
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+
   # conveyor-worker
   worker:
-    tag: "4.6.1.0"
+    tag: "4.7.0.1"
     minReplicas: 3
-    maxReplicas: 20
+    maxReplicas: 6
     # application resources limits and requests
     resources:
       limits:
@@ -316,12 +403,33 @@ global:
         memory: 2000M
     # enigma private_key_id
     enigma_pk_id: ""
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - worker
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - worker
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
 
   # mult
   mult:
-    tag: "2.5.1.0"
+    tag: "2.6.0.1"
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 4
     ## pvc name if it already exist or was created manualy
     persistantVolumeClaimName: "mult-pvc"
     ## true if pvc for mult should be created automaticaly
@@ -330,25 +438,68 @@ global:
     # application resources limits and requests
     resources:
       limits:
-        cpu: 4000m
-        memory: 4000Mi
+        cpu: 2
+        memory: 2048Mi
       requests:
-        cpu: 1500m
-        memory: 1500Mi
+        cpu: 2
+        memory: 2048Mi
     # enigma private_key_id
     enigma_pk_id: ""
 
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - mult
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - mult
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+
   # webadm
   webadm:
-    tag: "5.6.1"
+    tag: "5.7.0"
     minReplicas: 1
     resources:
       limits:
         cpu: 200m
-        memory: 500Mi
+        memory: 512Mi
       requests:
         cpu: 200m
-        memory: 500Mi
+        memory: 512Mi
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - corezoid-web-adm
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - corezoid-web-adm
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
 
   # web-superadm
   web_superadm:
@@ -359,21 +510,42 @@ global:
   # syncapi
   syncapi:
     subdomain: "syncapi"
-    tag: "2.0.4"
+    tag: "2.1.0"
     minReplicas: 2
-    maxReplicas: 20
+    maxReplicas: 6
     resources:
       limits:
         cpu: 2
-        memory: 1000Mi
+        memory: 2048Mi
       requests:
         cpu: 2
-        memory: 1000Mi
+        memory: 2048Mi
+
+    affinity: {}
+  #    # hard AZ-based affinity
+  #      podAntiAffinity:
+  #        requiredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #              - key: tier
+  #                operator: In
+  #                values:
+  #                  - syncapi
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
+  #    # soft AZ-based affinity
+  #      podAntiAffinity:
+  #        preferredDuringSchedulingIgnoredDuringExecution:
+  #          - labelSelector:
+  #              matchExpressions:
+  #                - key: tier
+  #                  operator: In
+  #                  values:
+  #                    - syncapi
+  #            topologyKey: failure-domain.beta.kubernetes.io/zone
 
   # merchant
   merchant:
     tag: "v0.0.27.2"
-    # true or false
     enabled: true
     subdomain: "merchant"
     secret:
@@ -415,39 +587,63 @@ global:
   sa:
     # true or false
     enabled: false
+    google_client_id: ""
+    google_client_secret: ""
   sa_web:
     subdomain: ""
 
   # gitcall | worker and rabbit settings
   gitcall:
     # true or false
-    enabled: true
+    enabled: false
     mq_vhost: "/conveyor"
     dunder_mq_vhost: "/dundergitcall"
 
 
   # conf-agent-server
   conf_agent_server:
-    tag: "1.5.2"
+    tag: "1.5.1"
     minReplicas: 2
-    maxReplicas: 2
+    maxReplicas: 4
     resources:
       limits:
-        cpu: 1200m
-        memory: 1500Mi
+        cpu: 1000m
+        memory: 1000Mi
       requests:
-        cpu: 1200m
-        memory: 1500Mi
+        cpu: 1000m
+        memory: 1000Mi
 
   limits:
     tag: "1.2.2"
     minReplicas: 2
 
-  tolerations:
-  - effect: NoSchedule
-    key: node-role.kubernetes.io/worker
-    operator: Exists
-
-  # debug options
-  # allows write crushdumps to the stderr output for capturing by logging system
-  debug: false
+  # global log level definition, info - default
+  # available value info | warning | error | debug
+  log_level: info
+  # allows store crushdumps and send to Telegram chat
+  store_dumps:
+    enabled: false
+    dumps_dir: /var/dumps/
+    http_endpoint: http://dump-service:3000/upload
+    pvc_size: 10Gi
+    notification_url: http://dump-service:3000/telegram
+    # domain name for dumps web ui
+    subdomain: ""
+    #    dump-k8s-public
+    # how to create login and password
+    # https://www.web2generators.com/apache-tools/htpasswd-generator
+    base_auth:
+      - admin:$apr1$kdvn7ybj$Wp1TO4qCvlTpUu1x248Nb0
+    # How to create telegram bot and get chat ID
+    # https://core.telegram.org/bots
+    # To get chat id replace {BOT_TOKEN} and open link in a browser
+    # https://api.telegram.org/bot{BOT_TOKEN}/getUpdates
+    # telegram token
+    telegram_token: ""
+    # telegram chat id
+    telegram_group: ""
+    rotate:
+      # dumps rotate interval (hourly|daily|weekly|monthly|yearly)
+      interval: daily
+      # number of rotation
+      copies: 7

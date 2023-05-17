@@ -86,44 +86,26 @@ data:
           {scheme, "https://"}
         ]},
 
-
         {ermql, [
 
             {publish_request, [
             {servers, [
           {{- if eq .Values.global.mq.internal false }}
               [
-                {host, "${MQ_HOST}"},
-                {port, ${MQ_PORT}},
-                {username, <<"${MQ_USERNAME}">>},
-                {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"${MQ_VHOST}">>}
-            ],
-              [
-                {host, "${MQ_HOST}"},
-                {port, ${MQ_PORT}},
-                {username, <<"${MQ_USERNAME}">>},
-                {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"/dbcall">>},
-                {pools, [dbcall]}
-              ]
-
-    {{- else }}
-              [
-                {host, "rabbit-service"},
-                {port, 5672},
-                {username, <<"${MQ_USERNAME}">>},
-                {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"${MQ_VHOST}">>}
-              ],
-              [
-                {host, "rabbit-service"},
-                {port, ${MQ_PORT}},
-                {username, <<"${MQ_USERNAME}">>},
-                {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"/dbcall">>},
-                {pools, [dbcall]}
-              ]
+              {host, "${MQ_HOST}"},
+              {port, ${MQ_PORT}},
+              {username, <<"${MQ_USERNAME}">>},
+              {password, <<"${MQ_PASSWORD}">>},
+              {vhost, <<"${MQ_VHOST}">>}
+            ]
+          {{- else }}
+                  [
+                    {host, "rabbit-service"},
+                    {port, 5672},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"${MQ_VHOST}">>}
+                ]
           {{- end }}
             ]},
               {queues_count, 1},
@@ -141,31 +123,14 @@ data:
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
-                ],
-                [
-                    {host, "${MQ_HOST}"},
-                    {port, ${MQ_PORT}},
-                    {username, <<"${MQ_USERNAME}">>},
-                    {password, <<"${MQ_PASSWORD}">>},
-                    {vhost, <<"/dbcall">>},
-                    {pools, [dbcall]}
                 ]
-
-    {{- else }}
+          {{- else }}
                   [
                     {host, "rabbit-service"},
                     {port, 5672},
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
-                ],
-                [
-                    {host, "rabbit-service"},
-                    {port, ${MQ_PORT}},
-                    {username, <<"${MQ_USERNAME}">>},
-                    {password, <<"${MQ_PASSWORD}">>},
-                    {vhost, <<"/dbcall">>},
-                    {pools, [dbcall]}
                 ]
           {{- end }}
             ]},
@@ -225,43 +190,12 @@ data:
         %% It replaces liqpay platform
         {merchant_api, [
             %% it uses api for connection and signs all queries using login and secret keys
-{{/*            {base_url, "http://merchant-service:8080"},         %% url merchant api*/}}
-            {base_url, "https://merchant.corezoid.comfy.ua"},         %% url merchant api
+            {base_url, "http://merchant-service:8080"},         %% url merchant api
             {login,  "${MERCHANT_LOGIN}"},            %% login
             {secret, "${MERCHANT_SECRET}"},
             {skip_otp, {{ .Values.global.capi.merchant_api.skip_otp }}},
             {health_url, "http://merchant-service:7980/actuator/health"}
         ]},
-
-
-
-        {mw_db_call, [
-            {enabled, true},
-            {db_call_host, "http://dbcall.corezoid.comfy.ua"},
-            {request_amqp, [
-                {host, <<"rabbit-service.corezoid.svc">>},
-                {port, 5672},
-                {username, <<"${MQ_USERNAME}">>},
-                {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"/dbcall">>},
-                {exchange, <<"db-call">>},
-                {is_durable_exchange, true},
-                {is_auto_delete_exchange, false},
-                {prefetch, 100},
-                {is_auto_delete_queue, false},
-                {is_durable_queue, true}
-            ]},
-            {response_amqp, [
-                {host, <<"rabbit-service.corezoid.svc">>},
-                {port, 5672},
-                {username, <<"${MQ_USERNAME}">>},
-                {password, <<"${MQ_PASSWORD}">>},
-                {vhost, <<"/dbcall">>}
-            ]},
-            {response_queue, <<"mw_dunderdbcall_response_queue_">>}
-        ]},
-
-
 
         {enigma, [
           {is_enabled, {{ .Values.global.enigma.enabled }}},
@@ -278,9 +212,9 @@ data:
         %% MAIN capi application
         {capi,
             [
+                {prometheus_metrics, true},
                 {{- if .Values.global.gitcall.enabled }}
-        {components, [<<"git_call">>, <<"db_call">>]}, %% Enabling/disabling components. Uses mostly by frontend
-
+                {components, [<<"git_call">>]}, %% Enabling/disabling components. Uses mostly by frontend
                 {{- end }}
                 %% It must be changed to unique name for every api node. It's personal
                 %% queue where will come messages from others api nodes.
@@ -371,7 +305,7 @@ data:
                 ]},
                 {sender, [
                     %% Interaction with the sender to create Sender forms, Sender action...
-                    {host, <<"builder.{{ .Values.global.domain }}">>},
+                    {host, <<"builder.sender.mobi">>},
                     {path, [
                         {embed, <<"/embed.js?">>},
                         {builder, <<"/builder.html">>}
@@ -518,9 +452,9 @@ data:
             %% memory redis for cache task
             {redis2, [
                 [   {{- if eq .Values.global.redis.internal false }}
-                    {host, "${REDIS_HOST}"},
-                    {port, ${REDIS_PORT}},
-                    {password,"${REDIS_PASSWORD}"},
+                    {host, "${REDIS_HOST_CACHE}"},
+                    {port, ${REDIS_PORT_CACHE}},
+                    {password,"${REDIS_PASSWORD_CACHE}"},
                     {{- else }}
                     {host, "redis-master"},
                     {port, 6379},
@@ -574,9 +508,9 @@ data:
                 {password, <<"${MQ_PASSWORD}">>},
           {{- end }}
                 {vhost, <<"${MQ_VHOST}">>},
-                {min_size, 5},
-                {max_size, 5},
-                {start_size, 5}
+                {min_size, 25},
+                {max_size, 25},
+                {start_size, 25}
             ]},
 
             % api copy queue (support multiply consumers)
@@ -912,21 +846,21 @@ data:
                 {send_interval, 5},
                 {disabled, true}
             ]},
-            {bot_wizzard_conv, 6929},
+
             {sender, [
                 %% sender communication
-                {sender_build_form_url, "https://api-conv.corezoid.comfy.ua"}, %% for build form url
-                {sender_build_action_url, "https://api-adm.corezoid.comfy.ua"}, %% for action url
-                {sender_call_action_url, "https://api-conv.corezoid.comfy.ua"}, %% for call action url
-                {sender_secret, <<"jRMaYK8TpPwzytDMNHeM9ziTbgJYGDcv">>},
-                {sender_plugin_secret, <<"Uu3fiwieohkah0OhAiVeeto9ein5jahBjouw3biLaidaNa3OyahH4ai">>},
+                {sender_build_form_url, ""}, %% for build form url
+                {sender_build_action_url, ""}, %% for action url
+                {sender_call_action_url, ""}, %% for call action url
+                {sender_secret, <<"">>},
+                {sender_plugin_secret, <<"">>},
                 {sender_max_threads, 25 },
                 {sender_env, <<"md">>}
             ]},
 
             %% example {allowed_domains, ["gmail.com", "corezoid.com", "github.com"]},
             {{- if .Values.global.capi.registration_restriction.enable }}
-            {allowed_domains, [{{- range .Values.global.capi.registration_restriction.allowed_domains  }} {{. | quote}},{{- end }} "{{ .Values.global.domain }}" ]},
+            {allowed_domains, [{{- range .Values.global.capi.registration_restriction.allowed_domains  }} {{ . | quote }},{{- end }} "{{ .Values.global.domain }}" ]},
             {{- end }}
 
             %%    % group for super_users
@@ -1003,11 +937,7 @@ data:
             %% What handlers to install with what arguments
 
             {log_root, "/ebsmnt/erlang/capi/log"},
-            {handlers, [
-                {lager_console_backend, info},
-                {lager_file_backend, [{file, "error.log"}, {level, error}, {size, 734003200}, {date, "$D0"}, {count, 1}]} %%,
-                %%{lager_file_backend, [{file, "console.log"}, {level, info}, {size, 734003200}, {date, "$D0"}, {count, 1}]}
-            ]},
+            {handlers, [ {lager_console_backend, {{ .Values.global.log_level | default "info" }} } ]},
             %% What colors to use with what log levels
             {colored, true},
             {colors, [
@@ -1042,25 +972,6 @@ data:
             %% Switch back to async mode, when gen_event mailbox size decrease from `async_threshold'
             %% to async_threshold - async_threshold_window
             {async_threshold_window, 5}
-        ]},
-
-        {hcheck_sender, [
-            {host, <<"hcs-service">>}, %% host of the remote healthcheck server
-            {port, 5011}, %% port of the remote healthcheck server
-            {node_name, <<"capi-{{ .Values.global.subdomain }}.{{ .Values.global.domain }}">> }, %% different for each node
-            {node_type, <<"capi">> }, %% capi | worker | multipart | http_worker | usercode | deepmemo ...
-            {disabled, true}, %% true by default
-            {send_interval_sec, 30}, %% by default 10 sec
-            {send_system_counters, true} %% memory processes etc, false by default
-        ]},
-
-        %% SASL config
-        {sasl, [
-            {sasl_error_logger, {file, "log/sasl-error.log"}},
-            {errlog_type, error},
-            {error_logger_mf_dir, "log/sasl"},      % Log directory
-            {error_logger_mf_maxbytes, 10485760},   % 10 MB max file size
-            {error_logger_mf_maxfiles, 5}           % 5 files max
         ]},
 
         {account_sdk, [

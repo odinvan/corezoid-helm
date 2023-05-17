@@ -21,7 +21,7 @@ spec:
       template:
         spec:
           containers:
-            - image: "{{ .Values.global.imageRegistry }}/public/postgres:9.6.2-alpine"
+            - image: docker-hub.middleware.biz/public/postgres:9.6.2-alpine
               imagePullPolicy: {{ .Values.global.imagePullPolicy | default "IfNotPresent" }}
               name: postgres-taskarchive-cron
               command:
@@ -35,14 +35,10 @@ spec:
                 runAsUser: 70
               env:
                 - name: POSTGRES_DBHOST
-                  {{- if .Values.global.db.bouncer }}
-                  value: "pg-postgresql"
-                  {{- else }}
                   valueFrom:
                     secretKeyRef:
                       name: {{ .Values.global.db.secret.name }}
-                      key: postgres_dbhost
-                  {{- end }}
+                      key: dbhost
                 - name: POSTGRES_DBSUPERUSER
                   valueFrom:
                     secretKeyRef:

@@ -11,14 +11,14 @@ spec:
       tier: {{ .Values.appName }}
   strategy:
     type: RollingUpdate
-  replicas: 1
+  replicas: {{ .Values.global.merchant.minReplicas }}
   template:
     metadata:
       annotations:
-        checksum/config_application: {{ include (print $.Template.BasePath "/merchant-application-properties-configmap.yaml") . | sha256sum }}
-        checksum/config_callback: {{ include (print $.Template.BasePath "/merchant-callback-properties-configmap.yaml") . | sha256sum }}
-        checksum/config_datasource: {{ include (print $.Template.BasePath "/merchant-datasource-configmap.yaml") . | sha256sum }}
-        checksum/config_spring: {{ include (print $.Template.BasePath "/merchant-log4j2-spring-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/merchant-application-properties-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/merchant-callback-properties-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/merchant-datasource-configmap.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/merchant-log4j2-spring-configmap.yaml") . | sha256sum }}
         prometheus.io/path: /metrics
         prometheus.io/port: "9100"
         prometheus.io/scrape: "true"
@@ -27,44 +27,44 @@ spec:
         tier: {{ .Values.appName }}
     spec:
       terminationGracePeriodSeconds: 40
-{{/*      initContainers:*/}}
-{{/*        - name: init-wait*/}}
-{{/*          image: "{{ .Values.global.imageRegistry }}/public/alpine"*/}}
-{{/*          command: ["sh", "-c", "apk add postgresql-client; until PGPASSWORD=${POSTGRES_DBPWD} psql -h ${POSTGRES_DBHOST} -U ${POSTGRES_DBUSER} -d merchant -c \"select 1\" > /dev/null 2>&1 ; do echo Waiting while postgres created settings db ...; sleep 3; done"]*/}}
-{{/*          env:*/}}
-{{/*            - name: POSTGRES_DBHOST*/}}
-{{/*              {{- if .Values.global.db.bouncer }}*/}}
-{{/*              value: "pgbouncer-service"*/}}
-{{/*              {{- else }}*/}}
-{{/*              valueFrom:*/}}
-{{/*                secretKeyRef:*/}}
-{{/*                  name: {{ .Values.global.db.secret.name }}*/}}
-{{/*                  key: dbhost*/}}
-{{/*            {{- end }}*/}}
-{{/*            - name: POSTGRES_DBPORT*/}}
-{{/*              valueFrom:*/}}
-{{/*                secretKeyRef:*/}}
-{{/*                  name: {{ .Values.global.db.secret.name }}*/}}
-{{/*                  key: dbport*/}}
-{{/*            - name: POSTGRES_DBUSER*/}}
-{{/*              valueFrom:*/}}
-{{/*                secretKeyRef:*/}}
-{{/*                  name: {{ .Values.global.db.secret.name }}*/}}
-{{/*                  key: dbuser*/}}
-{{/*            - name: POSTGRES_DBPWD*/}}
-{{/*              valueFrom:*/}}
-{{/*                secretKeyRef:*/}}
-{{/*                  name: {{ .Values.global.db.secret.name }}*/}}
-{{/*                  key: dbpwd*/}}
-{{/*            {{- if .Values.global.http_proxy }}*/}}
-{{/*            - name: http_proxy*/}}
-{{/*              value: {{ .Values.global.http_proxy }}*/}}
-{{/*            {{- end }}*/}}
+      initContainers:
+        - name: init-wait
+          image: docker-hub.middleware.biz/public/alpine
+          command: ["sh", "-c", "apk add postgresql-client; until PGPASSWORD=${POSTGRES_DBPWD} psql -h ${POSTGRES_DBHOST} -U ${POSTGRES_DBUSER} -d merchant -c \"select 1\" > /dev/null 2>&1 ; do echo Waiting while postgres created settings db ...; sleep 3; done"]
+          env:
+            - name: POSTGRES_DBHOST
+              {{- if .Values.global.db.bouncer }}
+              value: "pgbouncer-service"
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.db.secret.name }}
+                  key: dbhost
+            {{- end }}
+            - name: POSTGRES_DBPORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.db.secret.name }}
+                  key: dbport
+            - name: POSTGRES_DBUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.db.secret.name }}
+                  key: dbuser
+            - name: POSTGRES_DBPWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.db.secret.name }}
+                  key: dbpwd
       containers:
         - name: {{ .Values.appName }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | default "IfNotPresent" }}
-          image: "{{ .Values.global.imageRegistry }}/{{ .Values.global.repotype | default "public" }}{{ .Values.image.repository }}:{{ .Values.global.merchant.tag }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.global.repotype | default "public" }}{{ .Values.image.repository }}:{{ .Values.global.merchant.tag }}"
           env:
+          {{- if .Values.global.http_proxy }}
+          - name: http_proxy
+            value: {{ .Values.global.http_proxy }}
+          {{- end }}
           - name: MERCHANT_LOGIN
             valueFrom:
               secretKeyRef:
@@ -99,10 +99,6 @@ spec:
               secretKeyRef:
                 name: {{ .Values.global.db.secret.name }}
                 key: dbport
-          {{- if .Values.global.http_proxy }}
-          - name: http_proxy
-            value: {{ .Values.global.http_proxy }}
-           {{- end }}
           - name: SPRING_DATASOURCE_USERNAME
             valueFrom:
               secretKeyRef:
@@ -134,10 +130,6 @@ spec:
       {{- if not  (eq .Values.global.repotype "public") }}
       imagePullSecrets:
         - name: corezoid-secret
-      {{- end }}
-      {{- if (.Values.global.tolerations) }}
-      tolerations:
-{{ toYaml .Values.global.tolerations | indent 8 }}
       {{- end }}
       volumes:
         - name: {{ .Values.appName }}config

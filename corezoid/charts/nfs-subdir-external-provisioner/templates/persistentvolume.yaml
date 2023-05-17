@@ -5,6 +5,7 @@ kind: PersistentVolume
 metadata:
   name: pv-{{ template "nfs-subdir-external-provisioner.fullname" . }}
   labels: 
+    {{- include "nfs-subdir-external-provisioner.labels" . | nindent 4 }}
     nfs-subdir-external-provisioner: {{ template "nfs-subdir-external-provisioner.fullname" . }}
 spec:
   capacity:
@@ -12,7 +13,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - {{ .Values.storageClass.accessModes }}
-  persistentVolumeReclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+  persistentVolumeReclaimPolicy: {{ .Values.nfs.reclaimPolicy }}
   storageClassName: ""
   {{- if .Values.nfs.mountOptions }}
   mountOptions:
