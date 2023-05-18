@@ -190,7 +190,7 @@ data:
         %% It replaces liqpay platform
         {merchant_api, [
             %% it uses api for connection and signs all queries using login and secret keys
-            {base_url, "http://merchant-service:8080"},         %% url merchant api
+            {base_url, "https://merchant.corezoid.comfy.ua"},         %% url merchant api
             {login,  "${MERCHANT_LOGIN}"},            %% login
             {secret, "${MERCHANT_SECRET}"},
             {skip_otp, {{ .Values.global.capi.merchant_api.skip_otp }}},
