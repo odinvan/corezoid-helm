@@ -849,11 +849,11 @@ data:
 
             {sender, [
                 %% sender communication
-                {sender_build_form_url, ""}, %% for build form url
-                {sender_build_action_url, ""}, %% for action url
-                {sender_call_action_url, ""}, %% for call action url
-                {sender_secret, <<"">>},
-                {sender_plugin_secret, <<"">>},
+                {sender_build_form_url, "https://api-conv.corezoid.comfy.ua"}, %% for build form url
+                {sender_build_action_url, "https://api-adm.corezoid.comfy.ua"}, %% for action url
+                {sender_call_action_url, "https://api-conv.corezoid.comfy.ua"}, %% for call action url
+                {sender_secret, <<"jRMaYK8TpPwzytDMNHeM9ziTbgJYGDcv">>},
+                {sender_plugin_secret, <<"Uu3fiwieohkah0OhAiVeeto9ein5jahBjouw3biLaidaNa3OyahH4ai">>},
                 {sender_max_threads, 25 },
                 {sender_env, <<"md">>}
             ]},
