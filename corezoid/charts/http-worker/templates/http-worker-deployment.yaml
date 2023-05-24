@@ -58,10 +58,14 @@ spec:
                   key: dbhost
               {{- end }}
             - name: POSTGRES_DBPORT
+              {{- if .Values.global.db.bouncer }}
+              value: "5432"
+              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
+              {{- end }}
         - name: init-wait-rmq
           image: docker-hub.middleware.biz/public/alpine
           command: ['sh']
@@ -185,10 +189,14 @@ spec:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbpwd
             - name: POSTGRES_DBPORT
+              {{- if .Values.global.db.bouncer }}
+              value: "5432"
+              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
+              {{- end }}
           ports:
           - containerPort: 9080
           lifecycle:
