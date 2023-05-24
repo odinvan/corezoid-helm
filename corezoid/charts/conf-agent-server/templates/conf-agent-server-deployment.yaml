@@ -36,7 +36,7 @@ spec:
             - name: http_proxy
               value: {{ .Values.global.http_proxy }}
             - name: https_proxy
-              value: value: {{ .Values.global.http_proxy }}
+              value: {{ .Values.global.http_proxy }}
             - name: MQ_HOST
               valueFrom:
                 secretKeyRef:
