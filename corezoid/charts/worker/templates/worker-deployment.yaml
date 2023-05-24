@@ -64,6 +64,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
+              {{- end }}
         - name: init-wait-rmq
           image: docker-hub.middleware.biz/public/alpine
           command: ['sh']
@@ -212,6 +213,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
+              {{- end }}
           ports:
           - containerPort: 9080
           lifecycle:
