@@ -305,7 +305,7 @@ data:
                 ]},
                 {sender, [
                     %% Interaction with the sender to create Sender forms, Sender action...
-                    {host, <<"builder.sender.mobi">>},
+                    {host, <<"builder.{{ .Values.global.domain }}">>},
                     {path, [
                         {embed, <<"/embed.js?">>},
                         {builder, <<"/builder.html">>}
