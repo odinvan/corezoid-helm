@@ -61,7 +61,7 @@ spec:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
         - name: init-wait-rmq
-          image: docker-hub.middleware.biz/public/alpine
+          image: "{{ .Values.global.imageRegistry }}/public/alpine"
           command: ['sh']
           args:
             - "-c"
