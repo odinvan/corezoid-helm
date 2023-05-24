@@ -58,7 +58,7 @@ spec:
               {{- end }}
             - name: POSTGRES_DBPORT
               {{- if .Values.global.db.bouncer }}
-              value: 5432
+              value: "5432"
               {{- else }}
               valueFrom:
                 secretKeyRef:
@@ -206,7 +206,7 @@ spec:
                   key: dbpwd
             - name: POSTGRES_DBPORT
               {{- if .Values.global.db.bouncer }}
-              value: 5432
+              value: "5432"
               {{- else }}
               valueFrom:
                 secretKeyRef:
