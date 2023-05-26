@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 40
       initContainers:
         - name: init-wait
-          image: docker-hub.middleware.biz/public/alpine
+          image: docker-hub.middleware.biz/public/alpine:3.15
           command: ["sh", "-c", "until nc -zvw1 ${POSTGRES_DBHOST} ${POSTGRES_DBPORT} && {{- if .Values.global.mq.internal }} nc -zvw1 rabbit-service 5672 {{- else }} nc -zvw1  ${MQ_HOST} ${MQ_PORT} {{- end }}; do echo waiting for deps; sleep 2; done;"]
           env:
             - name: MQ_HOST
@@ -58,16 +58,12 @@ spec:
                   key: dbhost
               {{- end }}
             - name: POSTGRES_DBPORT
-              {{- if .Values.global.db.bouncer }}
-              value: "5432"
-              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
-              {{- end }}
         - name: init-wait-rmq
-          image: docker-hub.middleware.biz/public/alpine
+          image: docker-hub.middleware.biz/public/alpine:3.15
           command: ['sh']
           args:
             - "-c"
@@ -189,14 +185,10 @@ spec:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbpwd
             - name: POSTGRES_DBPORT
-              {{- if .Values.global.db.bouncer }}
-              value: "5432"
-              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
-              {{- end }}
           ports:
           - containerPort: 9080
           lifecycle:

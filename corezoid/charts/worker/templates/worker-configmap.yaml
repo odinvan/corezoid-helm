@@ -5,6 +5,9 @@ data:
         {limits_client, [
             {redis, [
                 [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
                     {{- if eq .Values.global.redis.internal false }}
                     {host, "${REDIS_HOST}"},
                     {port, ${REDIS_PORT}},
@@ -14,6 +17,7 @@ data:
                     {port, 6379},
                     {password,""},
                     {{- end }}
+    {{- end }}
                     {database, 9},
                     {start_size, 1},
                     {min_size, 1},
@@ -44,10 +48,32 @@ data:
          {disabled, true}
        ]},
 
+    {{- if eq .Values.global.redis.sentinel.enable true }}
+      {redis_sentinel, [
+          {servers, [
+            [
+              {master_name, "{{ .Values.global.redis.sentinel.master_name }}"},     %% name of master redis santinel
+              {redis_password, "${REDIS_PASSWORD}"},        %% Used for connect to redis          (optional) if empty can remove
+              {sentinel_password, "${REDIS_PASSWORD}"},  %% Used for connect to redis sentinel (optional) if empty can remove
+              {sentinels, [
+                [
+                  {host, "${REDIS_HOST}"},
+                  {port, ${REDIS_PORT}}
+                ]
+              ]}
+            ]
+          ]}
+        ]},
+    {{- end }}
+
+
       %% for clustering components
       {corezoid_cluster, [
           {backend, redis}, %% maybe if future list will increase
           {redis, [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+              {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
         {{- if eq .Values.global.redis.internal false }}
               {host, "${REDIS_HOST}"},
               {port, ${REDIS_PORT}},
@@ -57,65 +83,95 @@ data:
               {port, 6379},
               {password,""},
         {{- end }}
+    {{- end }}
               {database, 10}
           ]}
       ]},
 
         {ermql, [
 
-          {disabled, false},
+            {publish_request, [
+            {servers, [
+      {{- if eq .Values.global.mq.internal false }}
+                [
+                {host, "${MQ_HOST}"},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+              ],
+              [
+                {host, "${MQ_HOST}"},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+                {pools, [dbcall]}
+              ]
+      {{- else }}
+                [
+                {host, "rabbit-service"},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+              ],
+              [
+                {host, "rabbit-service"},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+                {pools, [dbcall]}
+              ]
+      {{- end }}
+            ]},
+              {queues_count, 1},
+              {min_size, 1},
+              {max_size, 1},
+              {start_size, 1}
+            ]},
 
-          {publish_request, [
-                    {servers, [
-          {{- if eq .Values.global.mq.internal false }}
+            {consumer_response, [
+            {servers, [
+    {{- if eq .Values.global.mq.internal false }}
                   [
                     {host, "${MQ_HOST}"},
                     {port, ${MQ_PORT}},
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
-                ]
-          {{- else }}
-                  [
-                    {host, "rabbit-service"},
-                    {port, 5672},
-                    {username, <<"${MQ_USERNAME}">>},
-                    {password, <<"${MQ_PASSWORD}">>},
-                    {vhost, <<"${MQ_VHOST}">>}
-                ]
-          {{- end }}
-            ]},
-            {queues_count, 1},
-            {min_size, 1},
-            {max_size, 1},
-            {start_size, 1}
-          ]},
-
-          {consumer_response, [
-                    {servers, [
-          {{- if eq .Values.global.mq.internal false }}
-                  [
+                ],
+                [
                     {host, "${MQ_HOST}"},
                     {port, ${MQ_PORT}},
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
-                    {vhost, <<"${MQ_VHOST}">>}
+                    {vhost, <<"${MQ_VHOST}">>},
+                    {pools, [dbcall]}
                 ]
-          {{- else }}
+    {{- else }}
                   [
                     {host, "rabbit-service"},
                     {port, 5672},
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
+                ],
+                [
+                    {host, "rabbit-service"},
+                    {port, 5672},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"${MQ_VHOST}">>},
+                    {pools, [dbcall]}
                 ]
-          {{- end }}
+    {{- end }}
             ]},
-            {connections_per_queue, 1},
-            {channels_per_connection, 1},
-            {messages_prefetch_size_per_channel, 50}
-          ]}
-
+              {connections_per_queue, 1},
+              {channels_per_connection, 1},
+              {messages_prefetch_size_per_channel, 50}
+            ]}
         ]},
 
         %% dns cache. Support multiply dnses cache
@@ -196,13 +252,57 @@ data:
         ]}
       ]},
 
+    {{- if eq .Values.global.dbcall.enabled true }}
+          {mw_db_call, [
+              {enabled, true},
+              {db_call_host, "{{ .Values.global.dbcall.schema }}://{{ .Values.global.dbcall.host }}"},
+              {request_amqp, [
+    {{- if eq .Values.global.mq.internal false }}
+                {host, <<"${MQ_HOST}">>},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+    {{- else }}
+                {host, <<"rabbit-service">>},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+    {{- end }}
+                {exchange, <<"db-call">>},
+                {is_durable_exchange, true},
+                {is_auto_delete_exchange, false},
+                {prefetch, 100},
+                {is_auto_delete_queue, false},
+                {is_durable_queue, true}
+              ]},
+              {response_amqp, [
+    {{- if eq .Values.global.mq.internal false }}
+                {host, <<"${MQ_HOST}">>},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+    {{- else }}
+                {host, <<"rabbit-service">>},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+    {{- end }}
+              ]},
+              {response_queue, <<"mw_dunderdbcall_response_queue_">>}
+          ]},
+    {{- end }}
 
       { worker,
         [
         %% server id
         %% It's important to be unique
         { worker_id, <<"">> },
-
+        {prometheus_metrics, {{ .Values.global.prometheus_metrics | default false }}  },
+        {use_limits_from_server, {{ .Values.global.use_limits_from_server | default false }}},
         {{- if .Values.global.enigma.encryption }}
         %% for ENCRYPT/DECRYPT data
         {encrypt_decrypt, [
@@ -318,7 +418,7 @@ data:
                 {max_size, 50},
                 {start_size, 3}
             ]},
-
+        {write_data_to_history, {{ .Values.global.worker.write_data_to_history | default false }} }, %% true|false - write or not tasks data into table
         %% redis sentinel quorum hosts
         {sentinels, []},
 
@@ -326,6 +426,9 @@ data:
         %% please don't forget about backup of this data
         { redis, [
           [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
           {{- if eq .Values.global.redis.internal false }}
             {host, "${REDIS_HOST}"},
             {port, ${REDIS_PORT}},
@@ -335,6 +438,7 @@ data:
             {port, 6379},
             {password,""},
           {{- end }}
+    {{- end }}
             {database,1},
             {start_size, 5},
             {min_size, 5},
@@ -346,6 +450,9 @@ data:
         %% please don't forget about backup of this data
         { redis_api_sum, [
           [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
           {{- if eq .Values.global.redis.internal false }}
             {host, "${REDIS_HOST}"},
             {port, ${REDIS_PORT}},
@@ -355,7 +462,7 @@ data:
             {port, 6379},
             {password,""},
           {{- end }}
-
+    {{- end }}
             {database,2},
             {start_size, 5},
             {min_size, 5},
@@ -366,6 +473,9 @@ data:
         %% cache, nonpersistent storage, keys will expire after N hours
         { redis2, [
           [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
           {{- if eq .Values.global.redis.internal false }}
             {host, "${REDIS_HOST_CACHE}"},
             {port, ${REDIS_PORT_CACHE}},
@@ -375,7 +485,7 @@ data:
             {port, 6379},
             {password,""},
           {{- end }}
-
+    {{- end }}
             {database,3},
             {start_size, 5},
             {min_size, 5},
@@ -387,6 +497,9 @@ data:
         %% these servers store timers in whole system
         {redis_timers, [
           [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
           {{- if eq .Values.global.redis.internal false }}
             {host, "${REDIS_HOST_TIMERS}"},
             {port, ${REDIS_PORT_TIMERS}},
@@ -396,7 +509,7 @@ data:
             {port, 6379},
             {password,""},
           {{- end }}
-
+    {{- end }}
             {database,4},
             {start_size, 5},
             {min_size, 5},

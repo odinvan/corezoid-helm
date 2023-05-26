@@ -31,13 +31,10 @@ spec:
       affinity:
         {{ .Values.global.capi.affinity | toYaml | nindent 8 | trim }}
       {{- end}}
-
-      terminationGracePeriodSeconds: 300
-
+      terminationGracePeriodSeconds: 60
       initContainers:
         - name: init-wait
-
-          image: "{{ .Values.global.imageRegistry }}/public/alpine"
+          image: docker-hub.middleware.biz/public/alpine:3.15
           command: ["sh", "-c", "until {{- if .Values.global.db.bouncer }} nc -zvw1 pgbouncer-service 5432 && {{- else }}  nc -zvw1 ${POSTGRES_DBHOST} ${POSTGRES_DBPORT} && {{- end }}  nc -zvw1  ${MQ_HOST} ${MQ_PORT}; do echo waiting for deps; sleep 2; done;"]
           env:
             - name: MQ_HOST
@@ -65,7 +62,7 @@ spec:
                   name: {{ .Values.global.db.secret.name }}
                   key: dbport
         - name: init-wait-rmq
-          image: "{{ .Values.global.imageRegistry }}/public/alpine"
+          image: docker-hub.middleware.biz/public/alpine:3.15
           command: ['sh']
           args:
             - "-c"
@@ -196,6 +193,21 @@ spec:
               secretKeyRef:
                 name: {{ .Values.global.elasticsearch.secret.name }}
                 key: port
+          - name: ELASTICSEARCH_SCHEMA
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.global.elasticsearch.secret.name }}
+                key: schema
+          - name: ELASTICSEARCH_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.global.elasticsearch.secret.name }}
+                key: username
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.global.elasticsearch.secret.name }}
+                key: password
           - name: POSTGRES_DBHOST
             {{- if .Values.global.db.bouncer }}
             value: "pgbouncer-service"
@@ -223,11 +235,14 @@ spec:
           ports:
           - containerPort: {{ .Values.containers.containerPort }}
           - containerPort: 8585
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/ebsmnt/erlang/capi/bin/capi","stop"]
           volumeMounts:
+            {{- if eq .Values.global.capi.auth_providers_enable true }}
+            {{- range $k, $v := $.Values.global.capi.saml_idp }}
+            - name: {{ $.Values.global.capi.capi_saml_secret_name }}
+              mountPath: /ebsmnt/conf/{{ $k }}_metadata.xml
+              subPath: {{ $k }}_metadata.xml
+            {{- end }}
+            {{- end }}
             - name: {{ .Values.appName }}config
               mountPath: /ebsmnt/conf/capi.config
               subPath: capi.config
@@ -250,8 +265,8 @@ spec:
               - |
                 ulimit -n 1024
                 exec /usr/bin/capi liveness
-            initialDelaySeconds: 20
-            periodSeconds: 20
+            initialDelaySeconds: 30
+            periodSeconds: 30
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 3
@@ -263,7 +278,7 @@ spec:
               - |
                 ulimit -n 1024
                 exec /usr/bin/capi readiness
-            initialDelaySeconds: 15
+            initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 5
             successThreshold: 1
@@ -287,6 +302,16 @@ spec:
         - name: corezoid-license
           secret:
             secretName: license-share-new
+        {{- if eq .Values.global.capi.auth_providers_enable true }}
+        - name: {{ .Values.global.capi.capi_saml_secret_name | default "capi-saml-secret" }}
+          secret:
+            secretName: {{ .Values.global.capi.capi_saml_secret_name | default "capi-saml-secret" }}
+          {{- if .Values.global.capi.capi_saml_secret_support  }}
+        - name: {{ .Values.global.capi.capi_saml_secret_name | default "capi-saml-secret-support" }}-support
+          secret:
+            secretName: {{ .Values.global.capi.capi_saml_secret_name | default "capi-saml-secret" }}
+          {{- end }}
+        {{- end }}
         {{- if .Values.global.store_dumps.enabled }}
         - name: dumps-volume
           hostPath:

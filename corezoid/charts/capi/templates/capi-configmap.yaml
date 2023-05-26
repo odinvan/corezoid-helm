@@ -6,6 +6,9 @@ data:
             {limits_client, [
                 {redis, [
                     [
+            {{- if eq .Values.global.redis.sentinel.enable  true }}
+                        {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+            {{- else }}
                         {{- if eq .Values.global.redis.internal false }}
                         {host, "${REDIS_HOST}"},
                         {port, ${REDIS_PORT}},
@@ -15,6 +18,7 @@ data:
                         {port, 6379},
                         {password,""},
                         {{- end }}
+            {{- end }}
                         {database, 9},
                         {start_size, 1},
                         {min_size, 1},
@@ -31,11 +35,31 @@ data:
             {disabled, true}
         ]},
 
+    {{- if eq .Values.global.redis.sentinel.enable true }}
+    {redis_sentinel, [
+          {servers, [
+            [
+              {master_name, "{{ .Values.global.redis.sentinel.master_name }}"},     %% name of master redis santinel
+              {redis_password, "${REDIS_PASSWORD}"},        %% Used for connect to redis          (optional) if empty can remove
+              {sentinel_password, "${REDIS_PASSWORD}"},  %% Used for connect to redis sentinel (optional) if empty can remove
+              {sentinels, [
+                [
+                  {host, "${REDIS_HOST}"},
+                  {port, ${REDIS_PORT}}
+                ]
+              ]}
+            ]
+          ]}
+        ]},
+    {{- end }}
 
         %% for clustering components
         {corezoid_cluster, [
             {backend, redis}, %% maybe if future list will increase
             {redis, [
+    {{- if eq .Values.global.redis.sentinel.enable  true }}
+                {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+    {{- else }}
             {{- if eq .Values.global.redis.internal false }}
                 {host, "${REDIS_HOST}"},
                 {port, ${REDIS_PORT}},
@@ -45,6 +69,7 @@ data:
                 {port, 6379},
                 {password,""},
             {{- end }}
+    {{- end }}
                 {database, 10}
             ]}
         ]},
@@ -80,10 +105,53 @@ data:
               ]}
           ]},
 
-        %% needed for conf_agent
+    {{- if eq .Values.global.dbcall.enabled true }}
+          {mw_db_call, [
+              {enabled, true},
+              {db_call_host, "{{ .Values.global.dbcall.schema }}://{{ .Values.global.dbcall.host }}"},
+              {request_amqp, [
+    {{- if eq .Values.global.mq.internal false }}
+                {host, <<"${MQ_HOST}">>},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+    {{- else }}
+                {host, <<"rabbit-service">>},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+    {{- end }}
+                {exchange, <<"db-call">>},
+                {is_durable_exchange, true},
+                {is_auto_delete_exchange, false},
+                {prefetch, 100},
+                {is_auto_delete_queue, false},
+                {is_durable_queue, true}
+              ]},
+              {response_amqp, [
+    {{- if eq .Values.global.mq.internal false }}
+                {host, <<"${MQ_HOST}">>},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+    {{- else }}
+                {host, <<"rabbit-service">>},
+                {port, 5672},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>}
+    {{- end }}
+              ]},
+              {response_queue, <<"mw_dunderdbcall_response_queue_">>}
+          ]},
+    {{- end }}
+
         {corezoid_sdk, [
-          {host, "{{ .Values.global.subdomain }}.{{ .Values.global.domain }}"},
-          {scheme, "https://"}
+          {host, "http://capi-service:9080"},
+          {scheme, "http://"}
         ]},
 
         {ermql, [
@@ -97,6 +165,14 @@ data:
               {username, <<"${MQ_USERNAME}">>},
               {password, <<"${MQ_PASSWORD}">>},
               {vhost, <<"${MQ_VHOST}">>}
+            ],
+            [
+                {host, "${MQ_HOST}"},
+                {port, ${MQ_PORT}},
+                {username, <<"${MQ_USERNAME}">>},
+                {password, <<"${MQ_PASSWORD}">>},
+                {vhost, <<"${MQ_VHOST}">>},
+                {pools, [dbcall]}
             ]
           {{- else }}
                   [
@@ -105,6 +181,14 @@ data:
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
+                ],
+                [
+                    {host, "rabbit-service"},
+                    {port, 5672},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"${MQ_VHOST}">>},
+                    {pools, [dbcall]}
                 ]
           {{- end }}
             ]},
@@ -123,6 +207,14 @@ data:
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
+                ],
+                [
+                    {host, "${MQ_HOST}"},
+                    {port, ${MQ_PORT}},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"${MQ_VHOST}">>},
+                    {pools, [dbcall]}
                 ]
           {{- else }}
                   [
@@ -131,6 +223,14 @@ data:
                     {username, <<"${MQ_USERNAME}">>},
                     {password, <<"${MQ_PASSWORD}">>},
                     {vhost, <<"${MQ_VHOST}">>}
+                ],
+                [
+                    {host, "rabbit-service"},
+                    {port, 5672},
+                    {username, <<"${MQ_USERNAME}">>},
+                    {password, <<"${MQ_PASSWORD}">>},
+                    {vhost, <<"${MQ_VHOST}">>},
+                    {pools, [dbcall]}
                 ]
           {{- end }}
             ]},
@@ -157,6 +257,36 @@ data:
           {vhost, "${MQ_VHOST}"},
           {gc_queues_regexp, ["api.ctrl","settings.capi"]}
         ]},
+
+      {{- if eq .Values.global.capi.auth_providers_enable true }}
+        {corezoid_auth_connector, [
+          {auth_providers, [
+            {{- $local := dict "first" true -}}
+            {{- range $k, $v := $.Values.global.capi.saml_idp }}
+            {{- if not $local.first -}},{{ end }}
+            {{- $_ := set $local "first" false }}
+            { {{ $k }}, [
+              {type, saml},
+              {show, {{ $v.front_button_show | default false }}},
+              {name, "{{ $v.name }}"},
+              {login_path, "{{ $v.login_path }}"},
+              {icon_url, "{{ $v.icon_url }}"},
+              {idp_metadata, "/ebsmnt/conf/{{ $k }}_metadata.xml"},
+              {idp_signs_envelopes, {{ $v.idp_signs_envelopes }}},
+              {idp_signs_assertions, {{ $v.idp_signs_assertions }}},
+              {idp_signs_metadata, {{ $v.idp_signs_metadata }}},
+              {sp_entity_id, "{{ $k }}.{{ $.Values.global.subdomain}}.{{ $.Values.global.domain }}"},
+              {sp_consume_url, "https://{{ $.Values.global.subdomain}}.{{ $.Values.global.domain }}{{ $v.sp_consume_url }}"},
+              {userinfo_map, [
+                {id, subject},
+                {email, subject},
+                {name, [first_name, last_name]}
+              ]}
+            ]}
+            {{- end }}
+          ]}
+        ]},
+        {{- end }}
 
         {conv_params, [
             {min_version, 2} %% application should deny creating task (copy/rpc) if params are not valid.
@@ -190,7 +320,7 @@ data:
         %% It replaces liqpay platform
         {merchant_api, [
             %% it uses api for connection and signs all queries using login and secret keys
-            {base_url, "https://merchant.corezoid.comfy.ua"},         %% url merchant api
+            {base_url, "http://merchant-service:8080"},         %% url merchant api
             {login,  "${MERCHANT_LOGIN}"},            %% login
             {secret, "${MERCHANT_SECRET}"},
             {skip_otp, {{ .Values.global.capi.merchant_api.skip_otp }}},
@@ -212,9 +342,38 @@ data:
         %% MAIN capi application
         {capi,
             [
-                {prometheus_metrics, true},
-                {{- if .Values.global.gitcall.enabled }}
+                {cookie, [ {secure, {{ .Values.global.capi.secure | default "false" }} } ]},
+                {check_2fa, {{ .Values.global.capi.check_2fa | default "false" }} },
+                {init_password, <<"{{ .Values.global.capi.init_admin_password }}">>},
+                {login_attempts, {{ .Values.global.capi.login_attempts | default "5" }} },
+                {share_api_keys_in_company, false},
+                {prometheus_metrics, {{ .Values.global.prometheus_metrics | default false }}  },
+                {use_limits_from_server, {{ .Values.global.use_limits_from_server | default false }}},
+                {redis_users, [[
+        {{- if eq .Values.global.redis.sentinel.enable  true }}
+                 {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+        {{- else }}
+        {{- if eq .Values.global.redis.internal false }}
+                  {host, "${REDIS_HOST}"},
+                  {port, ${REDIS_PORT}},
+                  {password,"${REDIS_PASSWORD}"},
+        {{- else }}
+                  {host, "redis-master"},
+                  {port, 6379},
+                  {password,""},
+        {{- end }}
+        {{- end }}
+                  {start_size, 3},
+                  {min_size, 3},
+                  {max_size, 50},
+                  {database, 1}
+            ]]},
+    {{- if .Values.global.gitcall.enabled }}
                 {components, [<<"git_call">>]}, %% Enabling/disabling components. Uses mostly by frontend
+                {{- end }}
+
+                {{- if .Values.global.dbcall.enabled }}
+                {components, [<<"db_call">>]}, %% Enabling/disabling components. Uses mostly by frontend
                 {{- end }}
                 %% It must be changed to unique name for every api node. It's personal
                 %% queue where will come messages from others api nodes.
@@ -243,6 +402,13 @@ data:
 
                 %% merchant api module that provides synchronization of the company through the middleware systems (Deepmemo, Corezoid and others)
                 {companies_manager, mapi }, %% mapi
+
+                %% Clearing old processes from the trash in days
+                %% {ttl, 0} - keep forever
+                {scraper, [
+                  {scrap_interval, {{ .Values.global.capi.scraper.scrap_interval | default "1" }} }, % Cleanup script run interval
+                  {ttl, {{ .Values.global.capi.scraper.ttl | default "30" }} }  % Retention time of a remote process in days ( if 0 - save infinity )
+                ]},
 
                 %% max req/sec of create|modify|delete for conv|folder|dashboard
                 %% It will be logged as ->
@@ -305,14 +471,14 @@ data:
                 ]},
                 {sender, [
                     %% Interaction with the sender to create Sender forms, Sender action...
-                    {host, <<"builder.{{ .Values.global.domain }}">>},
+                    {host, <<"builder.sender.mobi">>},
                     {path, [
                         {embed, <<"/embed.js?">>},
                         {builder, <<"/builder.html">>}
                     ]}
                 ]},
-                %{captcha_key, <<"">>},
                 {captcha, [
+                    {provider, {{ .Values.global.capi.captcha_provider }} },
                     {key, <<"${capi_front_captcha_key}">>}, %% key for works with captcha (page /login if corezoid registration)
                     {disabled, {{ .Values.global.capi.capi_front_captcha_disabled }} }
                 ]},
@@ -344,8 +510,12 @@ data:
                 %% 3. Folders
                 %% Elastic helps us to find these objects for name, It's as like in DB
             {elastic_search, [
-                {host, <<"${ELASTICSEARCH_HOST}">>},
+                {host, <<"${ELASTICSEARCH_SCHEMA}://${ELASTICSEARCH_HOST}">>},
                 {port, ${ELASTICSEARCH_PORT} },
+                {{- if eq .Values.global.elasticsearch.secret.auth_enabled true}}
+                {username, <<"${ELASTICSEARCH_USERNAME}">>}, % optional
+                {password, <<"${ELASTICSEARCH_PASSWORD}">>},  % optional
+                {{- end }}
                 {timeout, 50000}
             ]},
 
@@ -433,7 +603,11 @@ data:
 
             % redis pool for counters and api-sum-s
             {redis1, [
-                [   {{- if eq .Values.global.redis.internal false }}
+                [
+            {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+            {{- else }}
+                    {{- if eq .Values.global.redis.internal false }}
                     {host, "${REDIS_HOST}"},
                     {port, ${REDIS_PORT}},
                     {password,"${REDIS_PASSWORD}"},
@@ -442,6 +616,7 @@ data:
                     {port, 6379},
                     {password,""},
                     {{- end }}
+            {{- end }}
                     {database,1},
                     {start_size, 5},
                     {min_size, 5},
@@ -451,7 +626,11 @@ data:
 
             %% memory redis for cache task
             {redis2, [
-                [   {{- if eq .Values.global.redis.internal false }}
+                [
+            {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+            {{- else }}
+                    {{- if eq .Values.global.redis.internal false }}
                     {host, "${REDIS_HOST_CACHE}"},
                     {port, ${REDIS_PORT_CACHE}},
                     {password,"${REDIS_PASSWORD_CACHE}"},
@@ -460,6 +639,7 @@ data:
                     {port, 6379},
                     {password,""},
                     {{- end }}
+            {{- end }}
                     {database,3},
                     {start_size, 10},
                     {min_size, 10},
@@ -469,7 +649,11 @@ data:
 
             %% redis pool for api_sum logic
             {redis_api_sum, [
-                [   {{- if eq .Values.global.redis.internal false }}
+                [
+            {{- if eq .Values.global.redis.sentinel.enable  true }}
+                    {sentinel_master_name, "{{ .Values.global.redis.sentinel.master_name }}"}, %% From redis_sentinel master_name
+            {{- else }}
+                    {{- if eq .Values.global.redis.internal false }}
                     {host, "${REDIS_HOST}"},
                     {port, ${REDIS_PORT}},
                     {password,"${REDIS_PASSWORD}"},
@@ -478,6 +662,7 @@ data:
                     {port, 6379},
                     {password,""},
                     {{- end }}
+            {{- end }}
                     {database,2},
                     {start_size, 2},
                     {min_size, 2},
@@ -833,8 +1018,9 @@ data:
             %% Setting captcha backend
             {backend_settings, [
                 {captcha, [
+                    {provider, {{ .Values.global.capi.captcha_provider }} },
                     {key, <<"${capi_backend_captcha_key}">>},
-                    {verify_url, "https://www.google.com/recaptcha/api/siteverify"},
+                    {verify_url, "{{ .Values.global.capi.captcha_verify_url | default "https://www.google.com/recaptcha/api/siteverify" }}" },
                     {disabled, {{ .Values.global.capi.capi_front_captcha_disabled }} }
                 ]}
             ]},
@@ -849,11 +1035,11 @@ data:
 
             {sender, [
                 %% sender communication
-                {sender_build_form_url, "https://api-conv.corezoid.comfy.ua"}, %% for build form url
-                {sender_build_action_url, "https://api-adm.corezoid.comfy.ua"}, %% for action url
-                {sender_call_action_url, "https://api-conv.corezoid.comfy.ua"}, %% for call action url
-                {sender_secret, <<"jRMaYK8TpPwzytDMNHeM9ziTbgJYGDcv">>},
-                {sender_plugin_secret, <<"Uu3fiwieohkah0OhAiVeeto9ein5jahBjouw3biLaidaNa3OyahH4ai">>},
+                {sender_build_form_url, ""}, %% for build form url
+                {sender_build_action_url, ""}, %% for action url
+                {sender_call_action_url, ""}, %% for call action url
+                {sender_secret, <<"">>},
+                {sender_plugin_secret, <<"">>},
                 {sender_max_threads, 25 },
                 {sender_env, <<"md">>}
             ]},
@@ -931,6 +1117,9 @@ data:
             ]}
 
           ]},
+
+
+
 
 
         {lager, [
